@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  postgresql:
+    image: postgres:15
+    container_name: wordsearch_postgres
+    environment:
+      POSTGRES_DB: wordsearch_db
+      POSTGRES_USER: wordsearch_user
+      POSTGRES_PASSWORD: wordsearch_password
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5332:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wordsearch_user -d wordsearch_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer
+    container_name: wordsearch_adminer
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgresql
+
+volumes:
+  postgres_data:
+    driver: local

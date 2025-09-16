@@ -1,0 +1,75 @@
+### GET request to example server
+GET http://localhost:8080
+
+###
+GET http://localhost:8080/api/v1/software-engineers
+
+###
+GET http://localhost:8080/api/v1/software-engineers/1
+
+###
+POST http://localhost:8080/api/v1/software-engineers
+Content-Type: application/json
+
+{
+  "name": "Danh",
+  "techStack": "kbd, databases, q"
+}
+
+
+### Health Check (Verify Server and Service)
+GET http://localhost:8080/api/wordsearch/health
+
+### Get All Topics
+GET http://localhost:8080/api/wordsearch/topics
+
+### Get a Specific Topic (e.g., Travel)
+GET http://localhost:8080/api/wordsearch/topics/travel
+
+### Save Topic Completion (Progress)
+POST http://localhost:8080/api/wordsearch/progress
+Content-Type: application/json
+
+{
+  "userName": "testUser",
+  "topicId": "Travel",
+  "completed": true,
+  "timeSpent": "00:05:00"
+}
+
+
+### Get Topic Completion Status for a User and Topic (e.g., testUser and Travel)
+GET http://localhost:8080/api/wordsearch/progress/testUser/Travel
+
+### Get All Topic Completions for a User (e.g., testUser)
+GET http://localhost:8080/api/wordsearch/progress/testUser
+
+### Get User Statistics (e.g., for testUser) - Note: Fix the @GetMapping in code if needed to "/users/{userName}/stats"
+GET http://localhost:8080/api/wordsearch/users/testUser/stats
+
+### Admin: Create New Topic
+POST http://localhost:8080/api/wordsearch/admin/topics
+Content-Type: application/json
+
+{
+  "topicId": "travel",
+  "title": "Travel",
+  "difficulty": "Easy",
+  "gridSize": 12,
+  "wordCount": 6,
+  "words": ["AIRPORT", "CONVENIENT", "DESTINATION", "FOREIGN", "SOUVENIR", "LUGGAGE"]
+}
+
+### Admin: Update Topic (e.g., Travel)
+PUT http://localhost:8080/api/wordsearch/admin/topics/travel
+Content-Type: application/json
+
+{
+  "title": "Updated Travel",
+  "difficulty": "Hard",
+  "gridSize": 12,
+  "words": ["NEW", "WORDS"]
+}
+
+### Admin: Delete Topic (e.g., NewTopic)
+DELETE http://localhost:8080/api/wordsearch/admin/topics/travel
