@@ -72,4 +72,4 @@ Content-Type: application/json
 }
 
 ### Admin: Delete Topic (e.g., NewTopic)
-DELETE http://localhost:8080/api/wordsearch/admin/topics/travel
+DELETE http://localhost:8080/api/wordsearch/admin/topics/Travel

@@ -48,11 +48,12 @@ public class WordSearchTopic {
     public WordSearchTopic() {
     }
 
-    public WordSearchTopic(String topicId, String title, String difficulty, Integer gridSize, List<String> words) {
+    public WordSearchTopic(String topicId, String title, String difficulty, Integer gridSize, Integer wordCount, List<String> words) {
         this.topicId = topicId;
         this.title = title;
         this.difficulty = difficulty;
         this.gridSize = gridSize;
+        this.wordCount = words.size();
         this.words = words;
     }
 
