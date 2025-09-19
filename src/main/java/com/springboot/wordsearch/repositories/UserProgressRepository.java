@@ -1,6 +1,6 @@
-package com.springboot.repositories;
+package com.springboot.wordsearch.repositories;
 
-import com.springboot.entity.UserProgress;
+import com.springboot.wordsearch.entity.UserProgress;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

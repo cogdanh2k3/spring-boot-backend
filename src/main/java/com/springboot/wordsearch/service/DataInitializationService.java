@@ -1,7 +1,7 @@
-package com.springboot.service;
+package com.springboot.wordsearch.service;
 
-import com.springboot.entity.WordSearchTopic;
-import com.springboot.repositories.WordSearchTopicRepository;
+import com.springboot.wordsearch.entity.WordSearchTopic;
+import com.springboot.wordsearch.repositories.WordSearchTopicRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;

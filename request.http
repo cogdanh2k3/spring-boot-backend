@@ -1,22 +1,3 @@
-### GET request to example server
-GET http://localhost:8080
-
-###
-GET http://localhost:8080/api/v1/software-engineers
-
-###
-GET http://localhost:8080/api/v1/software-engineers/1
-
-###
-POST http://localhost:8080/api/v1/software-engineers
-Content-Type: application/json
-
-{
-  "name": "Danh",
-  "techStack": "kbd, databases, q"
-}
-
-
 ### Health Check (Verify Server and Service)
 GET http://localhost:8080/api/wordsearch/health
 
@@ -73,3 +54,82 @@ Content-Type: application/json
 
 ### Admin: Delete Topic (e.g., NewTopic)
 DELETE http://localhost:8080/api/wordsearch/admin/topics/Travel
+
+
+
+### Health Check (Verify Server and Service)
+GET http://localhost:8080/api/batchu/health
+
+### Get All Levels
+GET http://localhost:8080/api/batchu/levels
+
+### Get a Specific Level (e.g., LevelEasy)
+GET http://localhost:8080/api/batchu/levels/LevelEasy
+### Get a Specific Level (e.g., LevelNormal)
+GET http://localhost:8080/api/batchu/levels/LevelNormal
+### Get a Specific Level (e.g., LevelHard)
+GET http://localhost:8080/api/batchu/levels/LevelHard
+
+### Save Level Completion (Progress)
+POST http://localhost:8080/api/batchu/progress
+Content-Type: application/json
+
+{
+  "userName": "testUser",
+  "levelId": "LevelEasy",
+  "completed": true,
+  "timeSpent": "00:05:00"
+}
+
+### Get Level Completion Status for a User and Level (e.g., testUser and LevelEasy)
+GET http://localhost:8080/api/batchu/progress/testUser/LevelEasy
+
+### Get All Level Completions for a User (e.g., testUser)
+GET http://localhost:8080/api/batchu/progress/testUser
+
+### Get User Statistics (e.g., for testUser
+GET http://localhost:8080/api/batchu/users/testUser/stats
+
+### Admin: Create New Level
+POST http://localhost:8080/api/batchu/admin/levels
+Content-Type: application/json
+
+{
+  "levelId": "LevelNew",
+  "title": "New Level",
+  "difficulty": "Easy",
+  "questions": [
+    {
+      "questionText": "COWBOY",
+      "answer": "COWBOY",
+      "imageUrl": "https://firebasestorage.googleapis.com/v0/b/example.appspot.com/o/EN%2FCowboy.jpg?alt=media&token=example",
+      "suggestion": ""
+    },
+    {
+      "questionText": "EGGPLANT",
+      "answer": "EGGPLANT",
+      "imageUrl": "https://firebasestorage.googleapis.com/v0/b/example.appspot.com/o/EN%2FEggplant.jpg?alt=media&token=example",
+      "suggestion": ""
+    }
+  ]
+}
+
+### Admin: Update Level (e.g., LevelEasy)
+PUT http://localhost:8080/api/batchu/admin/levels/LevelEasy
+Content-Type: application/json
+
+{
+  "title": "Updated Easy Level",
+  "difficulty": "Hard",
+  "questions": [
+    {
+      "questionText": "NEWQUESTION",
+      "answer": "NEWANSWER",
+      "imageUrl": "https://firebasestorage.googleapis.com/v0/b/example.appspot.com/o/EN%2FNew.jpg?alt=media&token=example",
+      "suggestion": "New suggestion"
+    }
+  ]
+}
+
+### Admin: Delete Level (e.g., LevelEasy)
+DELETE http://localhost:8080/api/batchu/admin/levels/LevelEasy

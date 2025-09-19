@@ -1,7 +1,7 @@
-package com.springboot.controller;
+package com.springboot.wordsearch.controller;
 
-import com.springboot.entity.WordSearchTopic;
-import com.springboot.service.WordSearchService;
+import com.springboot.wordsearch.entity.WordSearchTopic;
+import com.springboot.wordsearch.service.WordSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

@@ -1,16 +1,15 @@
-package com.springboot.service;
+package com.springboot.wordsearch.service;
 
-import com.springboot.entity.UserProgress;
-import com.springboot.entity.WordSearchTopic;
-import com.springboot.repositories.UserProgressRepository;
-import com.springboot.repositories.WordSearchTopicRepository;
+import com.springboot.wordsearch.entity.UserProgress;
+import com.springboot.wordsearch.entity.WordSearchTopic;
+import com.springboot.wordsearch.repositories.UserProgressRepository;
+import com.springboot.wordsearch.repositories.WordSearchTopicRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 

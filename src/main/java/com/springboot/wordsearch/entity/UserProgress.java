@@ -1,4 +1,4 @@
-package com.springboot.entity;
+package com.springboot.wordsearch.entity;
 
 import com.springboot.SoftwareEngineer;
 import jakarta.persistence.*;
