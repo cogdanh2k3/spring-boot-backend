@@ -31,11 +31,7 @@ public class QuizGameLevel {
 
     private LocalDateTime createdAt;
 
-    @ElementCollection
-    @CollectionTable(
-            name = "level_questions",
-            joinColumns = @JoinColumn(name = "level_id")
-    )
+    @OneToMany(mappedBy = "level", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuizQuestion> questions;
 
     // Constructors
@@ -48,6 +44,9 @@ public class QuizGameLevel {
         this.difficulty = difficulty;
         this.questionCount = questions.size();
         this.questions = questions;
+        for (QuizQuestion question : questions) {
+            question.setLevel(this);
+        }
     }
 
     // Getters and Setters

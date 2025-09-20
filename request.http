@@ -133,3 +133,140 @@ Content-Type: application/json
 
 ### Admin: Delete Level (e.g., LevelEasy)
 DELETE http://localhost:8080/api/batchu/admin/levels/LevelEasy
+
+
+### Match Game: Health Check (Verify Server and Service)
+GET http://localhost:8080/api/matchgame/health
+### Get All Levels
+GET http://localhost:8080/api/matchgame/levels
+### Get a Specific Level (e.g., Easy)
+GET http://localhost:8080/api/matchgame/levels/Easy
+### Get a Specific Level (e.g., Normal)
+GET http://localhost:8080/api/matchgame/levels/Normal
+### Get a Specific Level (e.g., Hard)
+GET http://localhost:8080/api/matchgame/levels/Hard
+### Save Level Completion (Progress)
+POST http://localhost:8080/api/matchgame/progress
+Content-Type: application/json
+
+{
+  "userName": "testUser",
+  "levelId": "Easy",
+  "completed": true,
+  "timeSpent": "00:05:00"
+}
+
+### Get Level Completion Status for a User and Level (e.g., testUser and Easy)
+GET http://localhost:8080/api/matchgame/progress/testUser/Easy
+### Get All Level Completions for a User (e.g., testUser)
+GET http://localhost:8080/api/matchgame/progress/testUser
+### Get User Statistics (e.g., for testUser)
+GET http://localhost:8080/api/matchgame/users/testUser/stats
+### Admin: Create New Level
+POST http://localhost:8080/api/matchgame/admin/levels
+Content-Type: application/json
+
+{
+  "levelId": "NewLevel",
+  "title": "New Level",
+  "difficulty": "Easy",
+  "pairs": [
+    {
+      "definition": "A farm animal that says moo",
+      "word": "COW"
+    },
+      {
+        "definition": "A purple vegetable",
+        "word": "EGGPLANT"
+      }
+  ]
+}
+
+### Admin: Update Level (e.g., Easy)
+PUT http://localhost:8080/api/matchgame/admin/levels/Easy
+Content-Type: application/json
+
+{
+"title": "Updated Easy Level",
+"difficulty": "Hard",
+"pairs": [
+{
+"definition": "A new definition",
+"word": "NEWWORD"
+}
+]
+}
+
+### Admin: Delete Level (e.g., Easy)
+DELETE http://localhost:8080/api/matchgame/admin/levels/Easy
+
+### Quiz Game: Health Check (Verify Server and Service)
+GET http://localhost:8080/api/quizgame/health
+### Get All Levels
+GET http://localhost:8080/api/quizgame/levels
+### Get a Specific Level (e.g., LevelEasy)
+GET http://localhost:8080/api/quizgame/levels/LevelEasy
+### Get a Specific Level (e.g., LevelNormal)
+GET http://localhost:8080/api/quizgame/levels/LevelNormal
+### Get a Specific Level (e.g., LevelHard)
+GET http://localhost:8080/api/quizgame/levels/LevelHard
+### Save Level Completion (Progress)
+POST http://localhost:8080/api/quizgame/progress
+Content-Type: application/json
+
+{
+"userName": "testUser",
+"levelId": "LevelEasy",
+"completed": true,
+"timeSpent": "00:05:00"
+}
+
+### Get Level Completion Status for a User and Level (e.g., testUser and LevelEasy)
+GET http://localhost:8080/api/quizgame/progress/testUser/LevelEasy
+### Get All Level Completions for a User (e.g., testUser)
+GET http://localhost:8080/api/quizgame/progress/testUser
+### Get User Statistics (e.g., for testUser)
+GET http://localhost:8080/api/quizgame/users/testUser/stats
+### Admin: Create New Level
+POST http://localhost:8080/api/quizgame/admin/levels
+Content-Type: application/json
+
+{
+"levelId": "LevelNew",
+"title": "New Level",
+"difficulty": "Easy",
+"questions": [
+{
+"questionText": "Leave the driving to us! was a phrase advertising which company?",
+"answer": "Greyhound",
+"category": "world",
+"choices": ["Pan Am Airlines", "Amtrak", "Greyhound", "Hertz"]
+},
+{
+"questionText": "What is the capital of France?",
+"answer": "Paris",
+"category": "geography",
+"choices": ["London", "Berlin", "Paris", "Madrid"]
+}
+]
+}
+
+### Admin: Update Level (e.g., LevelEasy)
+PUT http://localhost:8080/api/quizgame/admin/levels/LevelEasy
+Content-Type: application/json
+
+{
+"title": "Updated Easy Level",
+"difficulty": "Hard",
+"questions": [
+{
+"questionText": "What is a new question?",
+"answer": "NewAnswer",
+"category": "new",
+"choices": ["Choice1", "Choice2", "NewAnswer", "Choice3"]
+}
+]
+}
+
+### Admin: Delete Level (e.g., LevelEasy)
+DELETE http://localhost:8080/api/quizgame/admin/levels/LevelEasy

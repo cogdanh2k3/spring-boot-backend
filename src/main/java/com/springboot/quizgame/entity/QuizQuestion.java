@@ -1,13 +1,17 @@
 package com.springboot.quizgame.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 
 import java.util.List;
 
-@Embeddable
+@Entity
+@Table(name = "quiz_questions")
 public class QuizQuestion {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @NotBlank
     private String questionText;
 
@@ -21,6 +25,10 @@ public class QuizQuestion {
     @Column(name = "choice")
     private List<String> choices;
 
+    @ManyToOne
+    @JoinColumn(name = "level_id")
+    private QuizGameLevel level;
+
     // Constructors
     public QuizQuestion() {
     }
@@ -33,6 +41,9 @@ public class QuizQuestion {
     }
 
     // Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
     public String getQuestionText() { return questionText; }
     public void setQuestionText(String questionText) { this.questionText = questionText; }
 
@@ -44,4 +55,7 @@ public class QuizQuestion {
 
     public List<String> getChoices() { return choices; }
     public void setChoices(List<String> choices) { this.choices = choices; }
+
+    public QuizGameLevel getLevel() { return level; }
+    public void setLevel(QuizGameLevel level) { this.level = level; }
 }
