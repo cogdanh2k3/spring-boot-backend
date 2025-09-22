@@ -1,9 +1,9 @@
 package com.springboot.matchgame.controller;
 
-import com.springboot.matchgame.entity.MatchGameLevel;
-import com.springboot.matchgame.entity.MatchGameUserProgress;
-import com.springboot.matchgame.entity.MatchPair;
-import com.springboot.matchgame.service.MatchGameService;
+import com.springboot.matchgame.entity.MatchLevel;
+import com.springboot.matchgame.entity.MatchUserProgress;
+import com.springboot.matchgame.entity.MatchWordPair;
+import com.springboot.matchgame.service.MatchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,21 +14,21 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/matchgame")
 @CrossOrigin(origins = "*")
-public class MatchGameController {
+public class MatchController {
 
-    private final MatchGameService matchGameService;
+    private final MatchService matchService;
 
     @Autowired
-    public MatchGameController(MatchGameService matchGameService) {
-        this.matchGameService = matchGameService;
+    public MatchController(MatchService matchService) {
+        this.matchService = matchService;
     }
 
     // Get level data
     @GetMapping("/levels/{levelId}")
-    public ResponseEntity<MatchGameLevelResponse> getMatchGameLevel(@PathVariable String levelId) {
-        return matchGameService.getMatchGameByLevel(levelId)
+    public ResponseEntity<MatchLevelResponse> getMatchLevel(@PathVariable String levelId) {
+        return matchService.getMatchByLevel(levelId)
                 .map(level -> {
-                    MatchGameLevelResponse response = new MatchGameLevelResponse(
+                    MatchLevelResponse response = new MatchLevelResponse(
                             level.getLevelId(),
                             level.getTitle(),
                             level.getDifficulty(),
@@ -42,15 +42,15 @@ public class MatchGameController {
 
     // Get all available levels
     @GetMapping("/levels")
-    public ResponseEntity<List<MatchGameLevel>> getAllLevels() {
-        List<MatchGameLevel> levels = matchGameService.getAllLevels();
+    public ResponseEntity<List<MatchLevel>> getAllLevels() {
+        List<MatchLevel> levels = matchService.getAllLevels();
         return ResponseEntity.ok(levels);
     }
 
     // Save level completion
     @PostMapping("/progress")
-    public ResponseEntity<MatchGameUserProgress> saveLevelCompletion(@RequestBody CompletionRequest request) {
-        MatchGameUserProgress progress = matchGameService.saveLevelCompletion(
+    public ResponseEntity<MatchUserProgress> saveLevelCompletion(@RequestBody CompletionRequest request) {
+        MatchUserProgress progress = matchService.saveLevelCompletion(
                 request.getUserName(),
                 request.getLevelId(),
                 request.isCompleted(),
@@ -64,35 +64,35 @@ public class MatchGameController {
     public ResponseEntity<CompletionResponse> getLevelCompletion(
             @PathVariable String userName,
             @PathVariable String levelId) {
-        boolean isCompleted = matchGameService.getLevelCompletion(userName, levelId);
+        boolean isCompleted = matchService.getLevelCompletion(userName, levelId);
         return ResponseEntity.ok(new CompletionResponse(isCompleted));
     }
 
     // Get all level completions for a user
     @GetMapping("/progress/{userName}")
     public ResponseEntity<Map<String, Boolean>> getAllLevelCompletion(@PathVariable String userName) {
-        Map<String, Boolean> completions = matchGameService.getAllLevelCompletions(userName);
+        Map<String, Boolean> completions = matchService.getAllLevelCompletions(userName);
         return ResponseEntity.ok(completions);
     }
 
     // Get user statistics
     @GetMapping("/users/{userName}/stats")
     public ResponseEntity<Map<String, Object>> getUserStatistics(@PathVariable String userName) {
-        Map<String, Object> stats = matchGameService.getUserStatistics(userName);
+        Map<String, Object> stats = matchService.getUserStatistics(userName);
         return ResponseEntity.ok(stats);
     }
 
     // Create new level
     @PostMapping("/admin/levels")
-    public ResponseEntity<MatchGameLevel> createLevel(@RequestBody MatchGameLevel level) {
-        MatchGameLevel createdLevel = matchGameService.createLevel(level);
+    public ResponseEntity<MatchLevel> createLevel(@RequestBody MatchLevel level) {
+        MatchLevel createdLevel = matchService.createLevel(level);
         return ResponseEntity.ok(createdLevel);
     }
 
     // Update existing level
     @PutMapping("/admin/levels/{levelId}")
-    public ResponseEntity<MatchGameLevel> updateLevel(@PathVariable String levelId, @RequestBody MatchGameLevel level) {
-        return matchGameService.updateLevel(levelId, level)
+    public ResponseEntity<MatchLevel> updateLevel(@PathVariable String levelId, @RequestBody MatchLevel level) {
+        return matchService.updateLevel(levelId, level)
                 .map(updatedLevel -> ResponseEntity.ok(updatedLevel))
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -100,7 +100,7 @@ public class MatchGameController {
     // Delete level
     @DeleteMapping("/admin/levels/{levelId}")
     public ResponseEntity<Void> deleteLevel(@PathVariable String levelId) {
-        boolean deleted = matchGameService.deleteLevel(levelId);
+        boolean deleted = matchService.deleteLevel(levelId);
         return deleted ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 
@@ -154,17 +154,17 @@ public class MatchGameController {
         public void setCompleted(boolean completed) { this.completed = completed; }
     }
 
-    public static class MatchGameLevelResponse {
+    public static class MatchLevelResponse {
         private String levelId;
         private String title;
         private String difficulty;
         private Integer pairCount;
-        private List<MatchPair> pairs;
+        private List<MatchWordPair> pairs;
 
-        public MatchGameLevelResponse() {}
+        public MatchLevelResponse() {}
 
-        public MatchGameLevelResponse(String levelId, String title, String difficulty,
-                                      Integer pairCount, List<MatchPair> pairs) {
+        public MatchLevelResponse(String levelId, String title, String difficulty,
+                                  Integer pairCount, List<MatchWordPair> pairs) {
             this.levelId = levelId;
             this.title = title;
             this.difficulty = difficulty;
@@ -185,7 +185,7 @@ public class MatchGameController {
         public Integer getPairCount() { return pairCount; }
         public void setPairCount(Integer pairCount) { this.pairCount = pairCount; }
 
-        public List<MatchPair> getPairs() { return pairs; }
-        public void setPairs(List<MatchPair> pairs) { this.pairs = pairs; }
+        public List<MatchWordPair> getPairs() { return pairs; }
+        public void setPairs(List<MatchWordPair> pairs) { this.pairs = pairs; }
     }
 }

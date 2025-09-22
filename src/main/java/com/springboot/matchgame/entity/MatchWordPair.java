@@ -5,26 +5,27 @@ import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotBlank;
 
 @Embeddable
-public class MatchPair {
-    @NotBlank
-    private String definition;
-
+public class MatchWordPair {
     @NotBlank
     private String word;
 
+    @NotBlank
+    @Column(name = "definition_text")
+    private String definition;
+
     // Constructors
-    public MatchPair() {
+    public MatchWordPair() {
     }
 
-    public MatchPair(String definition, String word) {
-        this.definition = definition;
+    public MatchWordPair(String word, String definition) {
         this.word = word;
+        this.definition = definition;
     }
 
     // Getters and Setters
-    public String getDefinition() { return definition; }
-    public void setDefinition(String definition) { this.definition = definition; }
-
     public String getWord() { return word; }
     public void setWord(String word) { this.word = word; }
+
+    public String getDefinition() { return definition; }
+    public void setDefinition(String definition) { this.definition = definition; }
 }

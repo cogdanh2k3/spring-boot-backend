@@ -1,7 +1,7 @@
 package com.springboot.matchgame.controller;
 
-import com.springboot.matchgame.entity.MatchGameLevel;
-import com.springboot.matchgame.service.MatchGameService;
+import com.springboot.matchgame.entity.MatchLevel;
+import com.springboot.matchgame.service.MatchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,34 +11,34 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/admin/matchgame")
-public class MatchGameAdminController {
+public class MatchAdminController {
 
-    private final MatchGameService matchGameService;
+    private final MatchService matchService;
 
     @Autowired
-    public MatchGameAdminController(MatchGameService matchGameService) {
-        this.matchGameService = matchGameService;
+    public MatchAdminController(MatchService matchService) {
+        this.matchService = matchService;
     }
 
     @GetMapping
     public String adminPanel(Model model) {
-        List<MatchGameLevel> levels = matchGameService.getAllLevels();
+        List<MatchLevel> levels = matchService.getAllLevels();
         model.addAttribute("levels", levels);
-        model.addAttribute("newLevel", new MatchGameLevel());
+        model.addAttribute("newLevel", new MatchLevel());
         return "admin/matchgame/index";
     }
 
     @PostMapping("/levels")
-    public String createLevel(@ModelAttribute MatchGameLevel newLevel) {
+    public String createLevel(@ModelAttribute MatchLevel newLevel) {
         // Assuming pairs are set properly in the form
         newLevel.setPairCount(newLevel.getPairs().size());
-        matchGameService.createLevel(newLevel);
+        matchService.createLevel(newLevel);
         return "redirect:/admin/matchgame";
     }
 
     @PostMapping("/levels/{levelId}")
     public String deleteLevel(@PathVariable String levelId) {
-        matchGameService.deleteLevel(levelId);
+        matchService.deleteLevel(levelId);
         return "redirect:/admin/matchgame";
     }
 }

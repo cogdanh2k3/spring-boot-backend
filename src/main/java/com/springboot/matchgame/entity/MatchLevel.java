@@ -9,8 +9,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "matchgame_levels")
-public class MatchGameLevel {
+@Table(name = "match_levels")
+public class MatchLevel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -36,13 +36,13 @@ public class MatchGameLevel {
             name = "level_pairs",
             joinColumns = @JoinColumn(name = "level_id")
     )
-    private List<MatchPair> pairs;
+    private List<MatchWordPair> pairs;
 
     // Constructors
-    public MatchGameLevel() {
+    public MatchLevel() {
     }
 
-    public MatchGameLevel(String levelId, String title, String difficulty, List<MatchPair> pairs) {
+    public MatchLevel(String levelId, String title, String difficulty, List<MatchWordPair> pairs) {
         this.levelId = levelId;
         this.title = title;
         this.difficulty = difficulty;
@@ -69,6 +69,6 @@ public class MatchGameLevel {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public List<MatchPair> getPairs() { return pairs; }
-    public void setPairs(List<MatchPair> pairs) { this.pairs = pairs; }
+    public List<MatchWordPair> getPairs() { return pairs; }
+    public void setPairs(List<MatchWordPair> pairs) { this.pairs = pairs; }
 }

@@ -1,9 +1,9 @@
 package com.springboot.matchgame.service;
 
-import com.springboot.matchgame.entity.MatchGameLevel;
-import com.springboot.matchgame.entity.MatchGameUserProgress;
-import com.springboot.matchgame.repositories.MatchGameLevelRepository;
-import com.springboot.matchgame.repositories.MatchGameUserProgressRepository;
+import com.springboot.matchgame.entity.MatchLevel;
+import com.springboot.matchgame.entity.MatchUserProgress;
+import com.springboot.matchgame.repositories.MatchLevelRepository;
+import com.springboot.matchgame.repositories.MatchUserProgressRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,36 +14,36 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class MatchGameService {
+public class MatchService {
 
-    private MatchGameLevelRepository levelRepository;
-    private MatchGameUserProgressRepository progressRepository;
+    private MatchLevelRepository levelRepository;
+    private MatchUserProgressRepository progressRepository;
 
     @Autowired
-    public MatchGameService(MatchGameLevelRepository levelRepository, MatchGameUserProgressRepository progressRepository) {
+    public MatchService(MatchLevelRepository levelRepository, MatchUserProgressRepository progressRepository) {
         this.levelRepository = levelRepository;
         this.progressRepository = progressRepository;
     }
 
-    public Optional<MatchGameLevel> getMatchGameByLevel(String levelId) {
+    public Optional<MatchLevel> getMatchByLevel(String levelId) {
         return levelRepository.findByLevelId(levelId);
     }
 
-    public List<MatchGameLevel> getAllLevels() {
+    public List<MatchLevel> getAllLevels() {
         return levelRepository.findAll();
     }
 
     // Save level completion
-    public MatchGameUserProgress saveLevelCompletion(String username, String levelId, boolean isCompleted, String timeSpent) {
-        Optional<MatchGameUserProgress> existingProgress = progressRepository.findByUsernameAndLevelId(username, levelId);
+    public MatchUserProgress saveLevelCompletion(String username, String levelId, boolean isCompleted, String timeSpent) {
+        Optional<MatchUserProgress> existingProgress = progressRepository.findByUsernameAndLevelId(username, levelId);
 
-        MatchGameUserProgress progress;
+        MatchUserProgress progress;
         if (existingProgress.isPresent()) {
             progress = existingProgress.get();
             progress.setCompleted(isCompleted);
             progress.setTimeSpent(timeSpent);
         } else {
-            progress = new MatchGameUserProgress(username, levelId, isCompleted);
+            progress = new MatchUserProgress(username, levelId, isCompleted);
             progress.setTimeSpent(timeSpent);
         }
 
@@ -57,24 +57,24 @@ public class MatchGameService {
     // Get level completion status for a user
     public boolean getLevelCompletion(String username, String levelId) {
         return progressRepository.findByUsernameAndLevelId(username, levelId)
-                .map(MatchGameUserProgress::getCompleted)
+                .map(MatchUserProgress::getCompleted)
                 .orElse(false);
     }
 
     // Get all level completions
     public Map<String, Boolean> getAllLevelCompletions(String username) {
-        List<MatchGameUserProgress> userProgressList = progressRepository.findByUsername(username);
+        List<MatchUserProgress> userProgressList = progressRepository.findByUsername(username);
         return userProgressList.stream()
                 .collect(Collectors.toMap(
-                        MatchGameUserProgress::getLevelId,
-                        MatchGameUserProgress::getCompleted
+                        MatchUserProgress::getLevelId,
+                        MatchUserProgress::getCompleted
                 ));
     }
 
     // Get user statistics
     public Map<String, Object> getUserStatistics(String username) {
-        List<MatchGameUserProgress> completedLevels = progressRepository.findByUsernameAndIsCompleted(username, true);
-        List<MatchGameUserProgress> allProgress = progressRepository.findByUsername(username);
+        List<MatchUserProgress> completedLevels = progressRepository.findByUsernameAndIsCompleted(username, true);
+        List<MatchUserProgress> allProgress = progressRepository.findByUsername(username);
 
         return Map.of(
                 "completedLevels", completedLevels.size(),
@@ -89,12 +89,12 @@ public class MatchGameService {
     }
 
     // Create a new level
-    public MatchGameLevel createLevel(MatchGameLevel level) {
+    public MatchLevel createLevel(MatchLevel level) {
         return levelRepository.save(level);
     }
 
     // Update existing level
-    public Optional<MatchGameLevel> updateLevel(String levelId, MatchGameLevel updatedLevel) {
+    public Optional<MatchLevel> updateLevel(String levelId, MatchLevel updatedLevel) {
         return levelRepository.findByLevelId(levelId)
                 .map(existing -> {
                     existing.setTitle(updatedLevel.getTitle());
