@@ -1,9 +1,9 @@
 package com.springboot.quizgame.service;
 
-import com.springboot.quizgame.entity.QuizGameLevel;
-import com.springboot.quizgame.entity.QuizGameUserProgress;
-import com.springboot.quizgame.repositories.QuizGameLevelRepository;
-import com.springboot.quizgame.repositories.QuizGameUserProgressRepository;
+import com.springboot.quizgame.entity.QuizLevel;
+import com.springboot.quizgame.entity.QuizUserProgress;
+import com.springboot.quizgame.repositories.QuizLevelRepository;
+import com.springboot.quizgame.repositories.QuizUserProgressRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,36 +14,35 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class QuizGameService {
+public class QuizService {
 
-    private QuizGameLevelRepository levelRepository;
-    private QuizGameUserProgressRepository progressRepository;
+    private QuizLevelRepository levelRepository;
+    private QuizUserProgressRepository progressRepository;
 
     @Autowired
-    public QuizGameService(QuizGameLevelRepository levelRepository, QuizGameUserProgressRepository progressRepository) {
+    public QuizService(QuizLevelRepository levelRepository, QuizUserProgressRepository progressRepository) {
         this.levelRepository = levelRepository;
         this.progressRepository = progressRepository;
     }
 
-    public Optional<QuizGameLevel> getQuizGameByLevel(String levelId) {
+    public Optional<QuizLevel> getQuizByLevel(String levelId) {
         return levelRepository.findByLevelId(levelId);
     }
 
-    public List<QuizGameLevel> getAllLevels() {
+    public List<QuizLevel> getAllLevels() {
         return levelRepository.findAll();
     }
 
-    // Save level completion
-    public QuizGameUserProgress saveLevelCompletion(String username, String levelId, boolean isCompleted, String timeSpent) {
-        Optional<QuizGameUserProgress> existingProgress = progressRepository.findByUsernameAndLevelId(username, levelId);
+    public QuizUserProgress saveLevelCompletion(String username, String levelId, boolean isCompleted, String timeSpent) {
+        Optional<QuizUserProgress> existingProgress = progressRepository.findByUsernameAndLevelId(username, levelId);
 
-        QuizGameUserProgress progress;
+        QuizUserProgress progress;
         if (existingProgress.isPresent()) {
             progress = existingProgress.get();
             progress.setCompleted(isCompleted);
             progress.setTimeSpent(timeSpent);
         } else {
-            progress = new QuizGameUserProgress(username, levelId, isCompleted);
+            progress = new QuizUserProgress(username, levelId, isCompleted);
             progress.setTimeSpent(timeSpent);
         }
 
@@ -54,27 +53,24 @@ public class QuizGameService {
         return progressRepository.save(progress);
     }
 
-    // Get level completion status for a user
     public boolean getLevelCompletion(String username, String levelId) {
         return progressRepository.findByUsernameAndLevelId(username, levelId)
-                .map(QuizGameUserProgress::getCompleted)
+                .map(QuizUserProgress::getCompleted)
                 .orElse(false);
     }
 
-    // Get all level completions
     public Map<String, Boolean> getAllLevelCompletions(String username) {
-        List<QuizGameUserProgress> userProgressList = progressRepository.findByUsername(username);
+        List<QuizUserProgress> userProgressList = progressRepository.findByUsername(username);
         return userProgressList.stream()
                 .collect(Collectors.toMap(
-                        QuizGameUserProgress::getLevelId,
-                        QuizGameUserProgress::getCompleted
+                        QuizUserProgress::getLevelId,
+                        QuizUserProgress::getCompleted
                 ));
     }
 
-    // Get user statistics
     public Map<String, Object> getUserStatistics(String username) {
-        List<QuizGameUserProgress> completedLevels = progressRepository.findByUsernameAndIsCompleted(username, true);
-        List<QuizGameUserProgress> allProgress = progressRepository.findByUsername(username);
+        List<QuizUserProgress> completedLevels = progressRepository.findByUsernameAndIsCompleted(username, true);
+        List<QuizUserProgress> allProgress = progressRepository.findByUsername(username);
 
         return Map.of(
                 "completedLevels", completedLevels.size(),
@@ -88,13 +84,11 @@ public class QuizGameService {
         );
     }
 
-    // Create a new level
-    public QuizGameLevel createLevel(QuizGameLevel level) {
+    public QuizLevel createLevel(QuizLevel level) {
         return levelRepository.save(level);
     }
 
-    // Update existing level
-    public Optional<QuizGameLevel> updateLevel(String levelId, QuizGameLevel updatedLevel) {
+    public Optional<QuizLevel> updateLevel(String levelId, QuizLevel updatedLevel) {
         return levelRepository.findByLevelId(levelId)
                 .map(existing -> {
                     existing.setTitle(updatedLevel.getTitle());
@@ -105,7 +99,6 @@ public class QuizGameService {
                 });
     }
 
-    // Delete level
     public boolean deleteLevel(String levelId) {
         return levelRepository.findByLevelId(levelId)
                 .map(level -> {

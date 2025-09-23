@@ -9,8 +9,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "quizgame_levels")
-public class QuizGameLevel {
+@Table(name = "quiz_levels")
+public class QuizLevel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -31,22 +31,18 @@ public class QuizGameLevel {
 
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "level", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "level_id")
     private List<QuizQuestion> questions;
 
-    // Constructors
-    public QuizGameLevel() {
-    }
+    public QuizLevel() {}
 
-    public QuizGameLevel(String levelId, String title, String difficulty, List<QuizQuestion> questions) {
+    public QuizLevel(String levelId, String title, String difficulty, List<QuizQuestion> questions) {
         this.levelId = levelId;
         this.title = title;
         this.difficulty = difficulty;
         this.questionCount = questions.size();
         this.questions = questions;
-        for (QuizQuestion question : questions) {
-            question.setLevel(this);
-        }
     }
 
     // Getters and Setters

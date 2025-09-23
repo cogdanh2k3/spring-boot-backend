@@ -1,9 +1,9 @@
 package com.springboot.quizgame.controller;
 
-import com.springboot.quizgame.entity.QuizGameLevel;
-import com.springboot.quizgame.entity.QuizGameUserProgress;
+import com.springboot.quizgame.entity.QuizLevel;
 import com.springboot.quizgame.entity.QuizQuestion;
-import com.springboot.quizgame.service.QuizGameService;
+import com.springboot.quizgame.entity.QuizUserProgress;
+import com.springboot.quizgame.service.QuizService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,23 +12,22 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/quizgame")
+@RequestMapping("/api/quiz")
 @CrossOrigin(origins = "*")
-public class QuizGameController {
+public class QuizController {
 
-    private final QuizGameService quizGameService;
+    private final QuizService quizService;
 
     @Autowired
-    public QuizGameController(QuizGameService quizGameService) {
-        this.quizGameService = quizGameService;
+    public QuizController(QuizService quizService) {
+        this.quizService = quizService;
     }
 
-    // Get level data
     @GetMapping("/levels/{levelId}")
-    public ResponseEntity<QuizGameLevelResponse> getQuizGameLevel(@PathVariable String levelId) {
-        return quizGameService.getQuizGameByLevel(levelId)
+    public ResponseEntity<QuizLevelResponse> getQuizLevel(@PathVariable String levelId) {
+        return quizService.getQuizByLevel(levelId)
                 .map(level -> {
-                    QuizGameLevelResponse response = new QuizGameLevelResponse(
+                    QuizLevelResponse response = new QuizLevelResponse(
                             level.getLevelId(),
                             level.getTitle(),
                             level.getDifficulty(),
@@ -40,17 +39,15 @@ public class QuizGameController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Get all available levels
     @GetMapping("/levels")
-    public ResponseEntity<List<QuizGameLevel>> getAllLevels() {
-        List<QuizGameLevel> levels = quizGameService.getAllLevels();
+    public ResponseEntity<List<QuizLevel>> getAllLevels() {
+        List<QuizLevel> levels = quizService.getAllLevels();
         return ResponseEntity.ok(levels);
     }
 
-    // Save level completion
     @PostMapping("/progress")
-    public ResponseEntity<QuizGameUserProgress> saveLevelCompletion(@RequestBody CompletionRequest request) {
-        QuizGameUserProgress progress = quizGameService.saveLevelCompletion(
+    public ResponseEntity<QuizUserProgress> saveLevelCompletion(@RequestBody CompletionRequest request) {
+        QuizUserProgress progress = quizService.saveLevelCompletion(
                 request.getUserName(),
                 request.getLevelId(),
                 request.isCompleted(),
@@ -59,55 +56,43 @@ public class QuizGameController {
         return ResponseEntity.ok(progress);
     }
 
-    // Get level completion status
     @GetMapping("/progress/{userName}/{levelId}")
     public ResponseEntity<CompletionResponse> getLevelCompletion(
             @PathVariable String userName,
             @PathVariable String levelId) {
-        boolean isCompleted = quizGameService.getLevelCompletion(userName, levelId);
+        boolean isCompleted = quizService.getLevelCompletion(userName, levelId);
         return ResponseEntity.ok(new CompletionResponse(isCompleted));
     }
 
-    // Get all level completions for a user
     @GetMapping("/progress/{userName}")
     public ResponseEntity<Map<String, Boolean>> getAllLevelCompletion(@PathVariable String userName) {
-        Map<String, Boolean> completions = quizGameService.getAllLevelCompletions(userName);
+        Map<String, Boolean> completions = quizService.getAllLevelCompletions(userName);
         return ResponseEntity.ok(completions);
     }
 
-    // Get user statistics
     @GetMapping("/users/{userName}/stats")
     public ResponseEntity<Map<String, Object>> getUserStatistics(@PathVariable String userName) {
-        Map<String, Object> stats = quizGameService.getUserStatistics(userName);
+        Map<String, Object> stats = quizService.getUserStatistics(userName);
         return ResponseEntity.ok(stats);
     }
 
-    // Create new level
     @PostMapping("/admin/levels")
-    public ResponseEntity<QuizGameLevel> createLevel(@RequestBody QuizGameLevel level) {
-        QuizGameLevel createdLevel = quizGameService.createLevel(level);
+    public ResponseEntity<QuizLevel> createLevel(@RequestBody QuizLevel level) {
+        QuizLevel createdLevel = quizService.createLevel(level);
         return ResponseEntity.ok(createdLevel);
     }
 
-    // Update existing level
     @PutMapping("/admin/levels/{levelId}")
-    public ResponseEntity<QuizGameLevel> updateLevel(@PathVariable String levelId, @RequestBody QuizGameLevel level) {
-        return quizGameService.updateLevel(levelId, level)
+    public ResponseEntity<QuizLevel> updateLevel(@PathVariable String levelId, @RequestBody QuizLevel level) {
+        return quizService.updateLevel(levelId, level)
                 .map(updatedLevel -> ResponseEntity.ok(updatedLevel))
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Delete level
     @DeleteMapping("/admin/levels/{levelId}")
     public ResponseEntity<Void> deleteLevel(@PathVariable String levelId) {
-        boolean deleted = quizGameService.deleteLevel(levelId);
+        boolean deleted = quizService.deleteLevel(levelId);
         return deleted ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
-    }
-
-    // Health check
-    @GetMapping("/health")
-    public ResponseEntity<Map<String, String>> healthCheck() {
-        return ResponseEntity.ok(Map.of("status", "healthy", "service", "quizgame-backend"));
     }
 
     // DTOs
@@ -154,17 +139,17 @@ public class QuizGameController {
         public void setCompleted(boolean completed) { this.completed = completed; }
     }
 
-    public static class QuizGameLevelResponse {
+    public static class QuizLevelResponse {
         private String levelId;
         private String title;
         private String difficulty;
         private Integer questionCount;
         private List<QuizQuestion> questions;
 
-        public QuizGameLevelResponse() {}
+        public QuizLevelResponse() {}
 
-        public QuizGameLevelResponse(String levelId, String title, String difficulty,
-                                     Integer questionCount, List<QuizQuestion> questions) {
+        public QuizLevelResponse(String levelId, String title, String difficulty,
+                                 Integer questionCount, List<QuizQuestion> questions) {
             this.levelId = levelId;
             this.title = title;
             this.difficulty = difficulty;

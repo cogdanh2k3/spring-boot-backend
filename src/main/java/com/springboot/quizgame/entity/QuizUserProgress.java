@@ -7,8 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "quizgame_user_progress")
-public class QuizGameUserProgress {
+@Table(name = "quiz_user_progress")
+public class QuizUserProgress {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,9 +28,9 @@ public class QuizGameUserProgress {
     private LocalDateTime completionDate;
 
     // Constructors
-    public QuizGameUserProgress() {}
+    public QuizUserProgress() {}
 
-    public QuizGameUserProgress(String username, String levelId, Boolean isCompleted) {
+    public QuizUserProgress(String username, String levelId, Boolean isCompleted) {
         this.username = username;
         this.levelId = levelId;
         this.isCompleted = isCompleted;

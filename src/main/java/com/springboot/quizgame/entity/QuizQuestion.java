@@ -2,7 +2,6 @@ package com.springboot.quizgame.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-
 import java.util.List;
 
 @Entity
@@ -13,7 +12,7 @@ public class QuizQuestion {
     private Long id;
 
     @NotBlank
-    private String questionText;
+    private String question;
 
     @NotBlank
     private String answer;
@@ -22,19 +21,14 @@ public class QuizQuestion {
     private String category;
 
     @ElementCollection
-    @Column(name = "choice")
+    @Column(name = "choices")
     private List<String> choices;
 
-    @ManyToOne
-    @JoinColumn(name = "level_id")
-    private QuizGameLevel level;
-
     // Constructors
-    public QuizQuestion() {
-    }
+    public QuizQuestion() {}
 
-    public QuizQuestion(String questionText, String answer, String category, List<String> choices) {
-        this.questionText = questionText;
+    public QuizQuestion(String question, String answer, String category, List<String> choices) {
+        this.question = question;
         this.answer = answer;
         this.category = category;
         this.choices = choices;
@@ -44,8 +38,8 @@ public class QuizQuestion {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public String getQuestionText() { return questionText; }
-    public void setQuestionText(String questionText) { this.questionText = questionText; }
+    public String getQuestion() { return question; }
+    public void setQuestion(String question) { this.question = question; }
 
     public String getAnswer() { return answer; }
     public void setAnswer(String answer) { this.answer = answer; }
@@ -55,7 +49,4 @@ public class QuizQuestion {
 
     public List<String> getChoices() { return choices; }
     public void setChoices(List<String> choices) { this.choices = choices; }
-
-    public QuizGameLevel getLevel() { return level; }
-    public void setLevel(QuizGameLevel level) { this.level = level; }
 }
