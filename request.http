@@ -290,3 +290,60 @@ POST http://localhost:8080/admin/quizgame/levels/LevelEasy
 
 ### Admin: Delete Level (e.g., LevelEasy via API)
 DELETE http://localhost:8080/api/quizgame/admin/levels/LevelEasy
+
+
+### Scene: Health Check (Verify Server and Service)
+GET http://localhost:8080/api/scene/health
+
+### Get All Levels
+GET http://localhost:8080/api/scene/levels
+
+### Get a Specific Level (e.g., LevelEasy)
+GET http://localhost:8080/api/scene/levels/LevelEasy
+
+### Get a Specific Level (e.g., LevelNormal)
+GET http://localhost:8080/api/scene/levels/LevelNormal
+
+### Get a Specific Level (e.g., LevelHard)
+GET http://localhost:8080/api/scene/levels/LevelHard
+
+### Save Level Completion (Progress)
+POST http://localhost:8080/api/scene/progress
+Content-Type: application/json
+
+{
+  "userName": "testUser",
+  "levelId": "LevelEasy",
+  "completed": true,
+  "timeSpent": "00:05:00"
+}
+
+### Get Level Completion Status for a User and Level (e.g., testUser and LevelEasy)
+GET http://localhost:8080/api/scene/progress/testUser/LevelEasy
+
+### Get All Level Completions for a User (e.g., testUser)
+GET http://localhost:8080/api/scene/progress/testUser
+
+### Get User Statistics (e.g., for testUser)
+GET http://localhost:8080/api/scene/users/testUser/stats
+
+### Admin: Create New Level
+POST http://localhost:8080/api/scene/admin/levels
+Content-Type: application/json
+
+{ "levelId": "LevelNew", "title": "New Level", "difficulty": "Easy", "locations": [ { "locationId": "new1", "locationName": "New Location 1", "imageUrl": "https://example.com/images/new1.jpg", "trueLat": 21.0285, "trueLon": 105.8542, "description": "A new location", "country": "Vietnam", "city": "Hanoi" }, { "locationId": "new2", "locationName": "New Location 2", "imageUrl": "https://example.com/images/new2.jpg", "trueLat": 10.7769, "trueLon": 106.7009, "description": "Another new location", "country": "Vietnam", "city": "Ho Chi Minh City" } ] }
+
+### Admin: Update Level (e.g., LevelEasy)
+PUT http://localhost:8080/api/scene/admin/levels/LevelEasy
+Content-Type: application/json
+
+{ "title": "Updated Easy Level", "difficulty": "Hard", "locations": [ { "locationId": "updated1", "locationName": "Updated Location", "imageUrl": "https://example.com/images/updated.jpg", "trueLat": 35.6762, "trueLon": 139.6503, "description": "Updated famous location", "country": "Japan", "city": "Tokyo" } ] }
+
+### Admin: Delete Level (e.g., LevelEasy)
+DELETE http://localhost:8080/api/scene/admin/levels/LevelEasy
+
+### Guess Location
+POST http://localhost:8080/api/scene/guess
+Content-Type: application/json
+
+{ "guessLat": 21.03, "guessLon": 105.85, "imageId": "easy1" }
