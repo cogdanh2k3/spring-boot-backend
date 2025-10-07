@@ -347,3 +347,86 @@ POST http://localhost:8080/api/scene/guess
 Content-Type: application/json
 
 { "guessLat": 21.03, "guessLon": 105.85, "imageId": "easy1" }
+
+### Sound: Health Check (Verify Server and Service)
+GET http://localhost:8080/api/sound/health
+
+### Get All Levels
+GET http://localhost:8080/api/sound/levels
+
+### Get a Specific Level (e.g., LevelEasy)
+GET http://localhost:8080/api/sound/levels/LevelEasy
+
+### Get a Specific Level (e.g., LevelNormal)
+GET http://localhost:8080/api/sound/levels/LevelNormal
+
+### Get a Specific Level (e.g., LevelHard)
+GET http://localhost:8080/api/sound/levels/LevelHard
+
+### Save Level Completion (Progress)
+POST http://localhost:8080/api/sound/progress
+Content-Type: application/json
+
+{
+  "userName": "testUser",
+  "levelId": "LevelEasy",
+  "completed": true,
+  "timeSpent": "00:05:00"
+}
+
+### Get Level Completion Status for a User and Level (e.g., testUser and LevelEasy)
+GET http://localhost:8080/api/sound/progress/testUser/LevelEasy
+
+### Get All Level Completions for a User (e.g., testUser)
+GET http://localhost:8080/api/sound/progress/testUser
+
+### Get User Statistics (e.g., for testUser)
+GET http://localhost:8080/api/scene/users/testUser/stats
+
+### Admin: Create New Level
+POST http://localhost:8080/api/sound/admin/levels
+Content-Type: application/json
+
+{
+  "levelId": "LevelNew",
+  "title": "New Sound Level",
+  "difficulty": "Easy",
+  "clips": [
+    {
+      "clipId": "clip1",
+      "clipName": "Sound Clip 1",
+      "audioUrl": "https://example.com/audio/clip1.mp3",
+      "correctAnswer": "Sound1",
+      "description": "A sound from nature"
+    },
+    {
+      "clipId": "clip2",
+      "clipName": "Sound Clip 2",
+      "audioUrl": "https://example.com/audio/clip2.mp3",
+      "correctAnswer": "Sound2",
+      "description": "A musical sound"
+    }
+  ],
+  "questionCount": 2
+}
+### Admin: Update Level (e.g., LevelEasy)
+PUT http://localhost:8080/api/sound/admin/levels/LevelEasy
+Content-Type: application/json
+
+{
+  "levelId": "LevelEasy",
+  "title": "Updated Easy Sound Level",
+  "difficulty": "Hard",
+  "clips": [
+    {
+      "clipId": "updatedClip1",
+      "clipName": "Updated Sound Clip",
+      "audioUrl": "https://example.com/audio/updatedClip1.mp3",
+      "correctAnswer": "UpdatedSound",
+      "description": "An updated sound clip"
+    }
+  ],
+  "questionCount": 1
+}
+### Admin: Delete Level (e.g., LevelEasy)
+DELETE http://localhost:8080/api/sound/admin/levels/LevelEasy
