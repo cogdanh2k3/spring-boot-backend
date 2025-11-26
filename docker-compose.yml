@@ -8,6 +8,8 @@ services:
       POSTGRES_USER: wordsearch_user
       POSTGRES_PASSWORD: wordsearch_password
       POSTGRES_HOST_AUTH_METHOD: trust
+      TZ: UTC
+      PGTZ: UTC
     ports:
       - "5332:5432"
     volumes:
