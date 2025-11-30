@@ -1,95 +1,149 @@
 package com.springboot.auth.entity;
 
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "users")
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
-    @Size(min = 3, max = 50)
-    @Column(unique = true)
+    @Column(unique = true, nullable = false, length = 50)
     private String username;
 
-    @NotBlank
-    @Email
-    @Column(unique = true)
+    @Column(unique = true, nullable = false, length = 100)
     private String email;
 
-    @NotBlank
-    @Size(min = 6)
+    @Column(nullable = false)
     private String password;
 
-    private String displayName;
-    
-    private String photoUrl;
-    
-    @Column(name = "firebase_uid")
-    private String firebaseUid;
-    
-    @Column(name = "auth_provider")
-    private String authProvider; // "local" or "firebase"
-    
-    @Column(name = "created_at")
+    @Column(length = 100)
+    private String fullName;
+
+    @Column(length = 20)
+    private String phoneNumber;
+
+    @Column(length = 500)
+    private String profileImageUrl;
+
+    @Column(nullable = false)
+    private boolean active = true;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-    
+
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
 
     // Constructors
     public User() {
         this.createdAt = LocalDateTime.now();
+        this.active = true;
     }
 
-    public User(String username, String email, String password) {
+    public User(String username, String email, String password, String fullName) {
         this.username = username;
         this.email = email;
         this.password = password;
-        this.authProvider = "local";
+        this.fullName = fullName;
         this.createdAt = LocalDateTime.now();
+        this.active = true;
     }
 
     // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getUsername() {
+        return username;
+    }
 
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-    public String getDisplayName() { return displayName; }
-    public void setDisplayName(String displayName) { this.displayName = displayName; }
+    public String getEmail() {
+        return email;
+    }
 
-    public String getPhotoUrl() { return photoUrl; }
-    public void setPhotoUrl(String photoUrl) { this.photoUrl = photoUrl; }
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-    public String getFirebaseUid() { return firebaseUid; }
-    public void setFirebaseUid(String firebaseUid) { this.firebaseUid = firebaseUid; }
+    public String getPassword() {
+        return password;
+    }
 
-    public String getAuthProvider() { return authProvider; }
-    public void setAuthProvider(String authProvider) { this.authProvider = authProvider; }
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public String getFullName() {
+        return fullName;
+    }
 
-    public LocalDateTime getLastLogin() { return lastLogin; }
-    public void setLastLogin(LocalDateTime lastLogin) { this.lastLogin = lastLogin; }
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public void setProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getLastLogin() {
+        return lastLogin;
+    }
+
+    public void setLastLogin(LocalDateTime lastLogin) {
+        this.lastLogin = lastLogin;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", fullName='" + fullName + '\'' +
+                ", active=" + active +
+                ", createdAt=" + createdAt +
+                ", lastLogin=" + lastLogin +
+                '}';
+    }
 }

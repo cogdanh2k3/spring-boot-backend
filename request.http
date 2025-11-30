@@ -430,3 +430,14 @@ Content-Type: application/json
 }
 ### Admin: Delete Level (e.g., LevelEasy)
 DELETE http://localhost:8080/api/sound/admin/levels/LevelEasy
+
+### ADD USER
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "test@example.com",
+  "password": "password123",
+  "fullName": "Test User"
+}
