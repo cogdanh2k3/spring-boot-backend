@@ -27,6 +27,25 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         try {
+            // Check if username already exists
+            if (authService.usernameExists(request.getUsername())) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "Username already exists");
+                errorResponse.put("user", null);
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+            }
+
+            // Check if email already exists
+            if (authService.emailExists(request.getEmail())) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "Email already registered");
+                errorResponse.put("user", null);
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+            }
+
+            // Register new user
             User user = authService.registerUser(
                     request.getUsername(),
                     request.getEmail(),
@@ -36,14 +55,15 @@ public class AuthController {
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("message", "User registered successfully");
+            response.put("message", "Registration successful");
             response.put("user", new UserResponse(user));
 
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
-            errorResponse.put("message", e.getMessage());
+            errorResponse.put("message", "Registration failed: " + e.getMessage());
+            errorResponse.put("user", null);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
@@ -52,30 +72,53 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
-            Optional<User> userOpt = authService.loginUser(
+            // Check if user exists by username or email
+            Optional<User> userOpt = authService.getUserByUsernameOrEmail(
                     request.getUsernameOrEmail(),
-                    request.getPassword()
+                    request.getUsernameOrEmail()
             );
 
-            if (userOpt.isPresent()) {
-                User user = userOpt.get();
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", true);
-                response.put("message", "Login successful");
-                response.put("user", new UserResponse(user));
-
-                return ResponseEntity.ok(response);
-            } else {
+            if (!userOpt.isPresent()) {
+                // Account not found
                 Map<String, Object> errorResponse = new HashMap<>();
                 errorResponse.put("success", false);
-                errorResponse.put("message", "Invalid credentials");
+                errorResponse.put("message", "Account not found. Please check your username/email.");
+                errorResponse.put("user", null);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+            }
+
+            // User exists, now verify password
+            User user = userOpt.get();
+            boolean passwordMatches = authService.verifyPassword(
+                    request.getPassword(),
+                    user.getPassword()
+            );
+
+            if (!passwordMatches) {
+                // Incorrect password
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "Incorrect password. Please try again.");
+                errorResponse.put("user", null);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
             }
+
+            // Login successful - update last login time
+            authService.updateLastLogin(user.getId());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Login successful");
+            response.put("user", new UserResponse(user));
+
+            return ResponseEntity.ok(response);
+
         } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
-            errorResponse.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+            errorResponse.put("message", "Login failed: " + e.getMessage());
+            errorResponse.put("user", null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
@@ -87,7 +130,10 @@ public class AuthController {
         if (userOpt.isPresent()) {
             return ResponseEntity.ok(new UserResponse(userOpt.get()));
         } else {
-            return ResponseEntity.notFound().build();
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "User not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         }
     }
 
@@ -114,6 +160,7 @@ public class AuthController {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
             errorResponse.put("message", e.getMessage());
+            errorResponse.put("user", null);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
