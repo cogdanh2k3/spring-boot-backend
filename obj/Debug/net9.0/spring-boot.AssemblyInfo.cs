@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("spring-boot")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+179e5e615b01d8faa53fb86735aa9a821bf3d110")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+58e512c671ce12514c8e1c913ec247159043bb17")]
 [assembly: System.Reflection.AssemblyProductAttribute("spring-boot")]
 [assembly: System.Reflection.AssemblyTitleAttribute("spring-boot")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
