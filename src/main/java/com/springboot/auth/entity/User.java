@@ -32,6 +32,10 @@ public class User {
     @Column(nullable = false)
     private boolean active = true;
 
+    // NEW: Role field
+    @Column(nullable = false, length = 20)
+    private String role = "USER"; // Default role is USER
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -42,6 +46,7 @@ public class User {
     public User() {
         this.createdAt = LocalDateTime.now();
         this.active = true;
+        this.role = "USER";
     }
 
     public User(String username, String email, String password, String fullName) {
@@ -51,6 +56,7 @@ public class User {
         this.fullName = fullName;
         this.createdAt = LocalDateTime.now();
         this.active = true;
+        this.role = "USER";
     }
 
     // Getters and Setters
@@ -118,6 +124,14 @@ public class User {
         this.active = active;
     }
 
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -134,6 +148,11 @@ public class User {
         this.lastLogin = lastLogin;
     }
 
+    // Helper method to check if user is admin
+    public boolean isAdmin() {
+        return "ADMIN".equals(this.role);
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -141,6 +160,7 @@ public class User {
                 ", username='" + username + '\'' +
                 ", email='" + email + '\'' +
                 ", fullName='" + fullName + '\'' +
+                ", role='" + role + '\'' +
                 ", active=" + active +
                 ", createdAt=" + createdAt +
                 ", lastLogin=" + lastLogin +

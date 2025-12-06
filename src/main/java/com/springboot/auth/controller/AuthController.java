@@ -202,6 +202,13 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("exists", exists));
     }
 
+    // NEW: Check if user is admin
+    @GetMapping("/check-admin/{username}")
+    public ResponseEntity<Map<String, Boolean>> checkAdmin(@PathVariable String username) {
+        boolean isAdmin = authService.isUserAdmin(username);
+        return ResponseEntity.ok(Map.of("isAdmin", isAdmin));
+    }
+
     // Health check
     @GetMapping("/health")
     public ResponseEntity<Map<String, String>> healthCheck() {
@@ -272,6 +279,7 @@ public class AuthController {
         private String fullName;
         private String phoneNumber;
         private String profileImageUrl;
+        private String role; // NEW
         private String createdAt;
         private String lastLogin;
 
@@ -282,6 +290,7 @@ public class AuthController {
             this.fullName = user.getFullName();
             this.phoneNumber = user.getPhoneNumber();
             this.profileImageUrl = user.getProfileImageUrl();
+            this.role = user.getRole(); // NEW
             this.createdAt = user.getCreatedAt() != null ? user.getCreatedAt().toString() : null;
             this.lastLogin = user.getLastLogin() != null ? user.getLastLogin().toString() : null;
         }
@@ -299,6 +308,8 @@ public class AuthController {
         public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
         public String getProfileImageUrl() { return profileImageUrl; }
         public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
+        public String getRole() { return role; }
+        public void setRole(String role) { this.role = role; }
         public String getCreatedAt() { return createdAt; }
         public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
         public String getLastLogin() { return lastLogin; }

@@ -53,38 +53,9 @@ public class AuthService {
         user.setCreatedAt(LocalDateTime.now());
         user.setLastLogin(LocalDateTime.now());
         user.setActive(true);
+        user.setRole("USER"); // Default role
 
         return userRepository.save(user);
-    }
-
-    // Login user - KHÔNG throw exception, trả về Optional.empty() thay vì
-    // Để Controller xử lý và trả về message phù hợp
-    public Optional<User> loginUser(String usernameOrEmail, String password) {
-        // Find user by username or email
-        Optional<User> userOpt = userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail);
-
-        if (userOpt.isEmpty()) {
-            // Không throw exception, trả về empty
-            return Optional.empty();
-        }
-
-        User user = userOpt.get();
-
-        // Check if account is active
-        if (!user.isActive()) {
-            throw new RuntimeException("Account is deactivated");
-        }
-
-        // Verify password - KHÔNG throw exception
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            return Optional.empty();
-        }
-
-        // Update last login
-        user.setLastLogin(LocalDateTime.now());
-        userRepository.save(user);
-
-        return Optional.of(user);
     }
 
     // Get user by username or email (dùng cho login check)
@@ -173,5 +144,23 @@ public class AuthService {
     // Check if email exists
     public boolean emailExists(String email) {
         return userRepository.existsByEmail(email.toLowerCase());
+    }
+
+    // NEW: Check if user is admin
+    public boolean isUserAdmin(String username) {
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        return userOpt.map(User::isAdmin).orElse(false);
+    }
+
+    // NEW: Set user role (only for admin operations)
+    public void setUserRole(String username, String role) {
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+
+        User user = userOpt.get();
+        user.setRole(role);
+        userRepository.save(user);
     }
 }
