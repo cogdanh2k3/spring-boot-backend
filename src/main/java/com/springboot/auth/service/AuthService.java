@@ -1,13 +1,14 @@
 package com.springboot.auth.service;
 
-import com.springboot.auth.entity.User;
-import com.springboot.auth.repository.UserRepository;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
+import com.springboot.auth.entity.User;
+import com.springboot.auth.repository.UserRepository;
 
 @Service
 public class AuthService {
@@ -150,6 +151,11 @@ public class AuthService {
     public boolean isUserAdmin(String username) {
         Optional<User> userOpt = userRepository.findByUsername(username);
         return userOpt.map(User::isAdmin).orElse(false);
+    }
+
+    // Alias for isUserAdmin
+    public boolean checkAdminRole(String username) {
+        return isUserAdmin(username);
     }
 
     // NEW: Set user role (only for admin operations)

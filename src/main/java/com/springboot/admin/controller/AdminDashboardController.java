@@ -1,19 +1,26 @@
 package com.springboot.admin.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.springboot.admin.service.ContestService;
+import com.springboot.admin.service.QuestionService;
 import com.springboot.auth.service.AuthService;
-import com.springboot.wordsearch.service.WordSearchService;
 import com.springboot.batchu.service.BatChuService;
 import com.springboot.matchgame.service.MatchService;
 import com.springboot.quizgame.service.QuizService;
 import com.springboot.scene.service.SceneService;
 import com.springboot.soundgame.service.SoundService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.springboot.wordsearch.service.WordSearchService;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -22,6 +29,12 @@ public class AdminDashboardController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private QuestionService questionService;
+
+    @Autowired
+    private ContestService contestService;
 
     @Autowired
     private WordSearchService wordSearchService;
@@ -60,6 +73,10 @@ public class AdminDashboardController {
 
         Map<String, Object> stats = new HashMap<>();
 
+        // Game stats
+        int totalGames = 6; // Word Search, Bat Chu, Match, Quiz, Scene, Sound
+        stats.put("totalGames", totalGames);
+
         // Word Search stats
         stats.put("wordSearchTopics", wordSearchService.getAllTopics().size());
 
@@ -77,6 +94,13 @@ public class AdminDashboardController {
 
         // Sound Game stats
         stats.put("soundLevels", soundService.getAllLevels().size());
+
+        // Question stats
+        stats.put("totalQuestions", questionService.getAllQuestions().size());
+
+        // Contest stats
+        stats.put("totalContests", contestService.getAllContests().size());
+        stats.put("activeContests", contestService.getContestsByStatus("live").size());
 
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);

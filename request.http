@@ -1,6 +1,147 @@
 ### Health Check (Verify Server and Service)
 GET http://localhost:8080/api/wordsearch/health
 
+###############################################
+### ADMIN PANEL APIS - Question Management ###
+###############################################
+
+### Admin Dashboard Stats
+GET http://localhost:8080/api/admin/dashboard/admin
+
+### Get All Questions with Filter
+POST http://localhost:8080/api/admin/questions/admin/filter
+Content-Type: application/json
+
+{
+  "category": "",
+  "difficulty": "",
+  "searchQuery": ""
+}
+
+### Get Question by ID
+GET http://localhost:8080/api/admin/questions/admin/q1
+
+### Create New Question
+POST http://localhost:8080/api/admin/questions/admin
+Content-Type: application/json
+
+{
+  "questionText": "Thủ đô của Việt Nam là gì?",
+  "choices": [
+    {"choiceLabel": "A", "choiceText": "Hà Nội", "isCorrect": true},
+    {"choiceLabel": "B", "choiceText": "TP.HCM", "isCorrect": false},
+    {"choiceLabel": "C", "choiceText": "Đà Nẵng", "isCorrect": false},
+    {"choiceLabel": "D", "choiceText": "Huế", "isCorrect": false}
+  ],
+  "difficulty": "Easy",
+  "category": "Địa lý",
+  "points": 10,
+  "timeLimit": 30
+}
+
+### Update Question
+PUT http://localhost:8080/api/admin/questions/admin
+Content-Type: application/json
+
+{
+  "id": "q1",
+  "questionText": "Thủ đô của Pháp là gì?",
+  "choices": [
+    {"choiceLabel": "A", "choiceText": "Paris", "isCorrect": true},
+    {"choiceLabel": "B", "choiceText": "London", "isCorrect": false},
+    {"choiceLabel": "C", "choiceText": "Berlin", "isCorrect": false},
+    {"choiceLabel": "D", "choiceText": "Madrid", "isCorrect": false}
+  ],
+  "difficulty": "Medium",
+  "category": "Địa lý",
+  "points": 15,
+  "timeLimit": 30
+}
+
+### Delete Question
+DELETE http://localhost:8080/api/admin/questions/admin/q1
+
+### Bulk Import Questions
+POST http://localhost:8080/api/admin/questions/admin/bulk
+Content-Type: application/json
+
+[
+  {
+    "questionText": "2 + 2 = ?",
+    "choices": [
+      {"choiceLabel": "A", "choiceText": "3", "isCorrect": false},
+      {"choiceLabel": "B", "choiceText": "4", "isCorrect": true},
+      {"choiceLabel": "C", "choiceText": "5", "isCorrect": false}
+    ],
+    "difficulty": "Easy",
+    "category": "Toán học",
+    "points": 10,
+    "timeLimit": 15
+  },
+  {
+    "questionText": "H2O là gì?",
+    "choices": [
+      {"choiceLabel": "A", "choiceText": "Nước", "isCorrect": true},
+      {"choiceLabel": "B", "choiceText": "Khí Oxy", "isCorrect": false}
+    ],
+    "difficulty": "Easy",
+    "category": "Hóa học",
+    "points": 10,
+    "timeLimit": 20
+  }
+]
+
+###############################################
+### ADMIN PANEL APIS - Contest Management ###
+###############################################
+
+### Get All Contests
+GET http://localhost:8080/api/admin/contests/admin
+
+### Get Contest by ID
+GET http://localhost:8080/api/admin/contests/admin/c1
+
+### Create New Contest
+POST http://localhost:8080/api/admin/contests/admin
+Content-Type: application/json
+
+{
+  "title": "Cuộc thi Toán học",
+  "description": "Test kiến thức toán học cơ bản",
+  "startTime": 1733500000000,
+  "endTime": 1733600000000,
+  "duration": 30,
+  "questionIds": ["q1", "q2", "q3"],
+  "maxParticipants": 100,
+  "createdBy": "admin"
+}
+
+### Update Contest
+PUT http://localhost:8080/api/admin/contests/admin
+Content-Type: application/json
+
+{
+  "id": "c1",
+  "title": "Cuộc thi Khoa học",
+  "description": "Test kiến thức khoa học tổng hợp",
+  "startTime": 1733500000000,
+  "endTime": 1733700000000,
+  "duration": 45,
+  "questionIds": ["q1", "q2", "q3", "q4"],
+  "maxParticipants": 150,
+  "status": "scheduled"
+}
+
+### Delete Contest
+DELETE http://localhost:8080/api/admin/contests/admin/c1
+
+### Get Contest Stats
+GET http://localhost:8080/api/admin/contests/admin/c1/stats
+
+###############################################
+### WORD SEARCH GAME APIS ###
+###############################################
+
 ### Get All Topics
 GET http://localhost:8080/api/wordsearch/topics
 
