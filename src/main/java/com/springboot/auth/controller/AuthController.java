@@ -2,11 +2,14 @@ package com.springboot.auth.controller;
 
 import com.springboot.auth.entity.User;
 import com.springboot.auth.service.AuthService;
+import com.springboot.auth.service.PasswordResetService;
+import com.springboot.auth.service.LoginAttemptService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -17,6 +20,12 @@ import java.util.Optional;
 public class AuthController {
 
     private final AuthService authService;
+    
+    @Autowired
+    private PasswordResetService passwordResetService;
+    
+    @Autowired
+    private LoginAttemptService loginAttemptService;
 
     @Autowired
     public AuthController(AuthService authService) {
@@ -70,8 +79,20 @@ public class AuthController {
 
     // Login endpoint
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+        String ipAddress = getClientIP(httpRequest);
+        
         try {
+            // Check if blocked
+            if (loginAttemptService.isBlocked(ipAddress, request.getUsernameOrEmail())) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "Too many failed attempts. Please try again in 30 minutes.");
+                errorResponse.put("user", null);
+                errorResponse.put("requiresCaptcha", true);
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(errorResponse);
+            }
+            
             // Check if user exists by username or email
             Optional<User> userOpt = authService.getUserByUsernameOrEmail(
                     request.getUsernameOrEmail(),
@@ -79,11 +100,16 @@ public class AuthController {
             );
 
             if (!userOpt.isPresent()) {
-                // Account not found
+                // Account not found - log failed attempt
+                loginAttemptService.logAttempt(ipAddress, request.getUsernameOrEmail(), false);
+                int remaining = loginAttemptService.getRemainingAttempts(ipAddress, request.getUsernameOrEmail());
+                
                 Map<String, Object> errorResponse = new HashMap<>();
                 errorResponse.put("success", false);
                 errorResponse.put("message", "Account not found. Please check your username/email.");
                 errorResponse.put("user", null);
+                errorResponse.put("remainingAttempts", remaining);
+                errorResponse.put("requiresCaptcha", remaining <= 2);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
             }
 
@@ -95,15 +121,21 @@ public class AuthController {
             );
 
             if (!passwordMatches) {
-                // Incorrect password
+                // Incorrect password - log failed attempt
+                loginAttemptService.logAttempt(ipAddress, request.getUsernameOrEmail(), false);
+                int remaining = loginAttemptService.getRemainingAttempts(ipAddress, request.getUsernameOrEmail());
+                
                 Map<String, Object> errorResponse = new HashMap<>();
                 errorResponse.put("success", false);
                 errorResponse.put("message", "Incorrect password. Please try again.");
                 errorResponse.put("user", null);
+                errorResponse.put("remainingAttempts", remaining);
+                errorResponse.put("requiresCaptcha", remaining <= 2);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
             }
 
-            // Login successful - update last login time
+            // Login successful - log successful attempt and update last login time
+            loginAttemptService.logAttempt(ipAddress, request.getUsernameOrEmail(), true);
             authService.updateLastLogin(user.getId());
 
             Map<String, Object> response = new HashMap<>();
@@ -120,6 +152,15 @@ public class AuthController {
             errorResponse.put("user", null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
+    }
+    
+    // Helper method to get client IP
+    private String getClientIP(HttpServletRequest request) {
+        String xfHeader = request.getHeader("X-Forwarded-For");
+        if (xfHeader == null) {
+            return request.getRemoteAddr();
+        }
+        return xfHeader.split(",")[0];
     }
 
     // Get user profile
@@ -213,6 +254,32 @@ public class AuthController {
     @GetMapping("/health")
     public ResponseEntity<Map<String, String>> healthCheck() {
         return ResponseEntity.ok(Map.of("status", "healthy", "service", "auth-backend"));
+    }
+    
+    // NEW: Forgot password - send PIN
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+        try {
+            String message = passwordResetService.generateResetPin(request.get("email"));
+            return ResponseEntity.ok(Map.of("success", true, "message", message));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+    
+    // NEW: Verify PIN and reset password
+    @PostMapping("/verify-pin")
+    public ResponseEntity<?> verifyPinAndResetPassword(@RequestBody Map<String, String> request) {
+        try {
+            String message = passwordResetService.verifyPinAndResetPassword(
+                    request.get("email"),
+                    request.get("pin"),
+                    request.get("newPassword")
+            );
+            return ResponseEntity.ok(Map.of("success", true, "message", message));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        }
     }
 
     // DTOs (Data Transfer Objects)
