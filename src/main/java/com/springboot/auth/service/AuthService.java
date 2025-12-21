@@ -104,6 +104,33 @@ public class AuthService {
         return userRepository.save(user);
     }
 
+    // Update user profile by ID (for mobile app)
+    public User updateUserProfileById(Long userId, String fullName, String gender, String dateOfBirth,
+            String hometown) {
+        Optional<User> userOpt = userRepository.findById(userId);
+
+        if (userOpt.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+
+        User user = userOpt.get();
+
+        if (fullName != null && !fullName.trim().isEmpty()) {
+            user.setFullName(fullName.trim());
+        }
+        if (gender != null && !gender.trim().isEmpty()) {
+            user.setGender(gender.trim());
+        }
+        if (dateOfBirth != null && !dateOfBirth.trim().isEmpty()) {
+            user.setDateOfBirth(dateOfBirth.trim());
+        }
+        if (hometown != null && !hometown.trim().isEmpty()) {
+            user.setHometown(hometown.trim());
+        }
+
+        return userRepository.save(user);
+    }
+
     // Change password
     public void changePassword(String username, String oldPassword, String newPassword) {
         Optional<User> userOpt = userRepository.findByUsername(username);

@@ -29,6 +29,15 @@ public class User {
     @Column(length = 500)
     private String profileImageUrl;
 
+    @Column(length = 10)
+    private String gender;
+
+    @Column(length = 20)
+    private String dateOfBirth;
+
+    @Column(length = 100)
+    private String hometown;
+
     @Column(nullable = false)
     private boolean active = true;
 
@@ -114,6 +123,30 @@ public class User {
 
     public void setProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public String getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(String dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getHometown() {
+        return hometown;
+    }
+
+    public void setHometown(String hometown) {
+        this.hometown = hometown;
     }
 
     public boolean isActive() {

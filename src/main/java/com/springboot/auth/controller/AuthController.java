@@ -75,8 +75,7 @@ public class AuthController {
                     request.getUsername(),
                     request.getEmail(),
                     request.getPassword(),
-                    request.getFullName()
-            );
+                    request.getFullName());
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -130,8 +129,7 @@ public class AuthController {
             // Check if user exists by username or email
             Optional<User> userOpt = authService.getUserByUsernameOrEmail(
                     request.getUsernameOrEmail(),
-                    request.getUsernameOrEmail()
-            );
+                    request.getUsernameOrEmail());
 
             if (!userOpt.isPresent()) {
                 // Account not found - log failed attempt
@@ -151,8 +149,7 @@ public class AuthController {
             User user = userOpt.get();
             boolean passwordMatches = authService.verifyPassword(
                     request.getPassword(),
-                    user.getPassword()
-            );
+                    user.getPassword());
 
             if (!passwordMatches) {
                 // Incorrect password - log failed attempt
@@ -222,8 +219,35 @@ public class AuthController {
                     username,
                     request.getFullName(),
                     request.getPhoneNumber(),
-                    request.getProfileImageUrl()
-            );
+                    request.getProfileImageUrl());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Profile updated successfully");
+            response.put("user", new UserResponse(updatedUser));
+
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("user", null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    // Update user profile by ID (for mobile app)
+    @PutMapping("/profile/{userId}")
+    public ResponseEntity<?> updateProfileById(
+            @PathVariable Long userId,
+            @RequestBody UpdateProfileRequest request) {
+        try {
+            User updatedUser = authService.updateUserProfileById(
+                    userId,
+                    request.getFullName(),
+                    request.getGender(),
+                    request.getDateOfBirth(),
+                    request.getHometown());
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -247,8 +271,7 @@ public class AuthController {
             authService.changePassword(
                     request.getUsername(),
                     request.getOldPassword(),
-                    request.getNewPassword()
-            );
+                    request.getNewPassword());
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -324,14 +347,37 @@ public class AuthController {
         private String fullName;
 
         // Getters and Setters
-        public String getUsername() { return username; }
-        public void setUsername(String username) { this.username = username; }
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-        public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
-        public String getFullName() { return fullName; }
-        public void setFullName(String fullName) { this.fullName = fullName; }
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+
+        public String getFullName() {
+            return fullName;
+        }
+
+        public void setFullName(String fullName) {
+            this.fullName = fullName;
+        }
     }
 
     public static class LoginRequest {
@@ -353,14 +399,58 @@ public class AuthController {
         private String fullName;
         private String phoneNumber;
         private String profileImageUrl;
+        private String gender;
+        private String dateOfBirth;
+        private String hometown;
 
         // Getters and Setters
-        public String getFullName() { return fullName; }
-        public void setFullName(String fullName) { this.fullName = fullName; }
-        public String getPhoneNumber() { return phoneNumber; }
-        public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
-        public String getProfileImageUrl() { return profileImageUrl; }
-        public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
+        public String getFullName() {
+            return fullName;
+        }
+
+        public void setFullName(String fullName) {
+            this.fullName = fullName;
+        }
+
+        public String getPhoneNumber() {
+            return phoneNumber;
+        }
+
+        public void setPhoneNumber(String phoneNumber) {
+            this.phoneNumber = phoneNumber;
+        }
+
+        public String getProfileImageUrl() {
+            return profileImageUrl;
+        }
+
+        public void setProfileImageUrl(String profileImageUrl) {
+            this.profileImageUrl = profileImageUrl;
+        }
+
+        public String getGender() {
+            return gender;
+        }
+
+        public void setGender(String gender) {
+            this.gender = gender;
+        }
+
+        public String getDateOfBirth() {
+            return dateOfBirth;
+        }
+
+        public void setDateOfBirth(String dateOfBirth) {
+            this.dateOfBirth = dateOfBirth;
+        }
+
+        public String getHometown() {
+            return hometown;
+        }
+
+        public void setHometown(String hometown) {
+            this.hometown = hometown;
+        }
     }
 
     public static class ChangePasswordRequest {
@@ -369,12 +459,29 @@ public class AuthController {
         private String newPassword;
 
         // Getters and Setters
-        public String getUsername() { return username; }
-        public void setUsername(String username) { this.username = username; }
-        public String getOldPassword() { return oldPassword; }
-        public void setOldPassword(String oldPassword) { this.oldPassword = oldPassword; }
-        public String getNewPassword() { return newPassword; }
-        public void setNewPassword(String newPassword) { this.newPassword = newPassword; }
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public String getOldPassword() {
+            return oldPassword;
+        }
+
+        public void setOldPassword(String oldPassword) {
+            this.oldPassword = oldPassword;
+        }
+
+        public String getNewPassword() {
+            return newPassword;
+        }
+
+        public void setNewPassword(String newPassword) {
+            this.newPassword = newPassword;
+        }
     }
 
     public static class UserResponse {
@@ -384,6 +491,9 @@ public class AuthController {
         private String fullName;
         private String phoneNumber;
         private String profileImageUrl;
+        private String gender;
+        private String dateOfBirth;
+        private String hometown;
         private String role; // NEW
         private String createdAt;
         private String lastLogin;
@@ -395,29 +505,109 @@ public class AuthController {
             this.fullName = user.getFullName();
             this.phoneNumber = user.getPhoneNumber();
             this.profileImageUrl = user.getProfileImageUrl();
+            this.gender = user.getGender();
+            this.dateOfBirth = user.getDateOfBirth();
+            this.hometown = user.getHometown();
             this.role = user.getRole(); // NEW
             this.createdAt = user.getCreatedAt() != null ? user.getCreatedAt().toString() : null;
             this.lastLogin = user.getLastLogin() != null ? user.getLastLogin().toString() : null;
         }
 
         // Getters and Setters
-        public Long getId() { return id; }
-        public void setId(Long id) { this.id = id; }
-        public String getUsername() { return username; }
-        public void setUsername(String username) { this.username = username; }
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-        public String getFullName() { return fullName; }
-        public void setFullName(String fullName) { this.fullName = fullName; }
-        public String getPhoneNumber() { return phoneNumber; }
-        public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
-        public String getProfileImageUrl() { return profileImageUrl; }
-        public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
-        public String getRole() { return role; }
-        public void setRole(String role) { this.role = role; }
-        public String getCreatedAt() { return createdAt; }
-        public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
-        public String getLastLogin() { return lastLogin; }
-        public void setLastLogin(String lastLogin) { this.lastLogin = lastLogin; }
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
+        }
+
+        public String getFullName() {
+            return fullName;
+        }
+
+        public void setFullName(String fullName) {
+            this.fullName = fullName;
+        }
+
+        public String getPhoneNumber() {
+            return phoneNumber;
+        }
+
+        public void setPhoneNumber(String phoneNumber) {
+            this.phoneNumber = phoneNumber;
+        }
+
+        public String getProfileImageUrl() {
+            return profileImageUrl;
+        }
+
+        public void setProfileImageUrl(String profileImageUrl) {
+            this.profileImageUrl = profileImageUrl;
+        }
+
+        public String getGender() {
+            return gender;
+        }
+
+        public void setGender(String gender) {
+            this.gender = gender;
+        }
+
+        public String getDateOfBirth() {
+            return dateOfBirth;
+        }
+
+        public void setDateOfBirth(String dateOfBirth) {
+            this.dateOfBirth = dateOfBirth;
+        }
+
+        public String getHometown() {
+            return hometown;
+        }
+
+        public void setHometown(String hometown) {
+            this.hometown = hometown;
+        }
+
+        public String getRole() {
+            return role;
+        }
+
+        public void setRole(String role) {
+            this.role = role;
+        }
+
+        public String getCreatedAt() {
+            return createdAt;
+        }
+
+        public void setCreatedAt(String createdAt) {
+            this.createdAt = createdAt;
+        }
+
+        public String getLastLogin() {
+            return lastLogin;
+        }
+
+        public void setLastLogin(String lastLogin) {
+            this.lastLogin = lastLogin;
+        }
     }
 }
