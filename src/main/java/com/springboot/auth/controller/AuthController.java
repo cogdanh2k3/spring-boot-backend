@@ -1,18 +1,31 @@
 package com.springboot.auth.controller;
 
-import com.springboot.auth.entity.User;
-import com.springboot.auth.service.AuthService;
-import com.springboot.auth.service.PasswordResetService;
-import com.springboot.auth.service.LoginAttemptService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.springboot.auth.controller.AuthController.ChangePasswordRequest;
+import com.springboot.auth.controller.AuthController.UpdateProfileRequest;
+import com.springboot.auth.controller.AuthController.UserResponse;
+import com.springboot.auth.entity.User;
+import com.springboot.auth.service.AuthService;
+import com.springboot.auth.service.LoginAttemptService;
+import com.springboot.auth.service.PasswordResetService;
+import com.springboot.auth.service.RecaptchaService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -31,6 +44,9 @@ public class AuthController {
     public AuthController(AuthService authService) {
         this.authService = authService;
     }
+
+    @Autowired
+    private RecaptchaService recaptchaService;
 
     // Register endpoint
     @PostMapping("/register")
@@ -93,6 +109,24 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(errorResponse);
             }
             
+                // NEW: Check remaining attempts to decide if captcha is required
+            int remaining = loginAttemptService.getRemainingAttempts(ipAddress, request.getUsernameOrEmail());
+            boolean requiresCaptcha = remaining <= 2;
+
+            // NEW: Verify captcha if required and provided
+            if (requiresCaptcha && request.getCaptchaToken() != null && !request.getCaptchaToken().isEmpty()) {
+                boolean captchaValid = recaptchaService.verifyToken(request.getCaptchaToken());
+                if (!captchaValid) {
+                    Map<String, Object> errorResponse = new HashMap<>();
+                    errorResponse.put("success", false);
+                    errorResponse.put("message", "Invalid reCAPTCHA. Please try again.");
+                    errorResponse.put("user", null);
+                    errorResponse.put("remainingAttempts", remaining);
+                    errorResponse.put("requiresCaptcha", true);
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+                }
+                System.out.println("✅ reCAPTCHA verified successfully for user: " + request.getUsernameOrEmail());
+            }
             // Check if user exists by username or email
             Optional<User> userOpt = authService.getUserByUsernameOrEmail(
                     request.getUsernameOrEmail(),
@@ -102,7 +136,7 @@ public class AuthController {
             if (!userOpt.isPresent()) {
                 // Account not found - log failed attempt
                 loginAttemptService.logAttempt(ipAddress, request.getUsernameOrEmail(), false);
-                int remaining = loginAttemptService.getRemainingAttempts(ipAddress, request.getUsernameOrEmail());
+                remaining = loginAttemptService.getRemainingAttempts(ipAddress, request.getUsernameOrEmail());
                 
                 Map<String, Object> errorResponse = new HashMap<>();
                 errorResponse.put("success", false);
@@ -123,7 +157,7 @@ public class AuthController {
             if (!passwordMatches) {
                 // Incorrect password - log failed attempt
                 loginAttemptService.logAttempt(ipAddress, request.getUsernameOrEmail(), false);
-                int remaining = loginAttemptService.getRemainingAttempts(ipAddress, request.getUsernameOrEmail());
+                remaining = loginAttemptService.getRemainingAttempts(ipAddress, request.getUsernameOrEmail());
                 
                 Map<String, Object> errorResponse = new HashMap<>();
                 errorResponse.put("success", false);
@@ -303,12 +337,16 @@ public class AuthController {
     public static class LoginRequest {
         private String usernameOrEmail;
         private String password;
-
+        private String captchaToken;
         // Getters and Setters
         public String getUsernameOrEmail() { return usernameOrEmail; }
         public void setUsernameOrEmail(String usernameOrEmail) { this.usernameOrEmail = usernameOrEmail; }
+       
         public String getPassword() { return password; }
         public void setPassword(String password) { this.password = password; }
+       
+        public String getCaptchaToken() { return captchaToken; }
+        public void setCaptchaToken(String captchaToken) { this.captchaToken = captchaToken; }
     }
 
     public static class UpdateProfileRequest {
