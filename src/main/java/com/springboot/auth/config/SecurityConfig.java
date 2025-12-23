@@ -1,11 +1,13 @@
 package com.springboot.auth.config;
 
+import com.springboot.auth.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -16,6 +18,12 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -28,16 +36,24 @@ public class SecurityConfig {
 
                 // Configure authorization
                 .authorizeHttpRequests(auth -> auth
-                        // Allow all requests to auth endpoints
-                        .requestMatchers("/api/auth/**").permitAll()
-                        // Allow all other requests (you can restrict this later)
-                        .anyRequest().permitAll()
-                )
+                        // PUBLIC endpoints - không cần token
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/register").permitAll()
+                        .requestMatchers("/api/auth/forgot-password").permitAll()
+                        .requestMatchers("/api/auth/verify-pin").permitAll()
+                        .requestMatchers("/api/auth/refresh-token").permitAll()
 
-                // Use stateless session (for REST API)
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                );
+                        // ADMIN endpoints - cần token + role ADMIN
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        // PROTECTED endpoints - cần token
+                        .anyRequest().authenticated())
+
+                // Use stateless session (for REST API with JWT)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                // Add JWT filter BEFORE UsernamePasswordAuthenticationFilter
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -46,17 +62,28 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Allow all origins (you should restrict this in production)
-        configuration.setAllowedOrigins(List.of("*"));
+        // Allow specific origins (cập nhật cho production)
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "http://10.0.2.2:8080",
+                "http://localhost:8080"));
 
         // Allow common HTTP methods
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
-        // Allow all headers
-        configuration.setAllowedHeaders(List.of("*"));
+        // Allow Authorization header for JWT
+        configuration.setAllowedHeaders(Arrays.asList(
+                "Authorization",
+                "Content-Type",
+                "Accept",
+                "Origin",
+                "X-Requested-With"));
 
-        // Allow credentials (if needed for cookies/sessions)
-        configuration.setAllowCredentials(false);
+        // Allow credentials
+        configuration.setAllowCredentials(true);
+
+        // Expose Authorization header to client
+        configuration.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

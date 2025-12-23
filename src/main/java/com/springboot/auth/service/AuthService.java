@@ -15,6 +15,9 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private PasswordValidator passwordValidator;
     private final EncryptionService encryptionService;
 
     @Autowired
@@ -33,8 +36,12 @@ public class AuthService {
         if (email == null || email.trim().isEmpty()) {
             throw new RuntimeException("Email is required");
         }
-        if (password == null || password.length() < 6) {
-            throw new RuntimeException("Password must be at least 6 characters");
+        
+        // Validate password strength
+        PasswordValidator.ValidationResult validation = passwordValidator.validate(password);
+        if (!validation.isValid()) {
+            throw new RuntimeException("Password requirements not met: " + 
+                    String.join(", ", validation.getErrors()));
         }
 
         // Check if username already exists
