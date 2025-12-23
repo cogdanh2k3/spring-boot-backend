@@ -20,6 +20,7 @@ import com.springboot.auth.controller.AuthController.ChangePasswordRequest;
 import com.springboot.auth.controller.AuthController.UpdateProfileRequest;
 import com.springboot.auth.controller.AuthController.UserResponse;
 import com.springboot.auth.entity.User;
+import com.springboot.auth.security.JwtTokenProvider;
 import com.springboot.auth.service.AuthService;
 import com.springboot.auth.service.LoginAttemptService;
 import com.springboot.auth.service.PasswordResetService;
@@ -33,16 +34,18 @@ import jakarta.servlet.http.HttpServletRequest;
 public class AuthController {
 
     private final AuthService authService;
-    
+    private final JwtTokenProvider jwtTokenProvider;
+
     @Autowired
     private PasswordResetService passwordResetService;
-    
+
     @Autowired
     private LoginAttemptService loginAttemptService;
 
     @Autowired
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, JwtTokenProvider jwtTokenProvider) {
         this.authService = authService;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @Autowired
@@ -96,7 +99,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         String ipAddress = getClientIP(httpRequest);
-        
+
         try {
             // Check if blocked
             if (loginAttemptService.isBlocked(ipAddress, request.getUsernameOrEmail())) {
@@ -107,8 +110,8 @@ public class AuthController {
                 errorResponse.put("requiresCaptcha", true);
                 return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(errorResponse);
             }
-            
-                // NEW: Check remaining attempts to decide if captcha is required
+
+            // NEW: Check remaining attempts to decide if captcha is required
             int remaining = loginAttemptService.getRemainingAttempts(ipAddress, request.getUsernameOrEmail());
             boolean requiresCaptcha = remaining <= 2;
 
@@ -135,7 +138,7 @@ public class AuthController {
                 // Account not found - log failed attempt
                 loginAttemptService.logAttempt(ipAddress, request.getUsernameOrEmail(), false);
                 remaining = loginAttemptService.getRemainingAttempts(ipAddress, request.getUsernameOrEmail());
-                
+
                 Map<String, Object> errorResponse = new HashMap<>();
                 errorResponse.put("success", false);
                 errorResponse.put("message", "Account not found. Please check your username/email.");
@@ -155,7 +158,7 @@ public class AuthController {
                 // Incorrect password - log failed attempt
                 loginAttemptService.logAttempt(ipAddress, request.getUsernameOrEmail(), false);
                 remaining = loginAttemptService.getRemainingAttempts(ipAddress, request.getUsernameOrEmail());
-                
+
                 Map<String, Object> errorResponse = new HashMap<>();
                 errorResponse.put("success", false);
                 errorResponse.put("message", "Incorrect password. Please try again.");
@@ -169,10 +172,19 @@ public class AuthController {
             loginAttemptService.logAttempt(ipAddress, request.getUsernameOrEmail(), true);
             authService.updateLastLogin(user.getId());
 
+            // Generate JWT tokens
+            String accessToken = jwtTokenProvider.generateAccessToken(user.getId(), user.getUsername(), user.getRole());
+            String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId(), user.getUsername());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Login successful");
             response.put("user", new UserResponse(user));
+            // JWT tokens
+            response.put("accessToken", accessToken);
+            response.put("refreshToken", refreshToken);
+            response.put("accessTokenExpiresIn", 900); // 15 minutes in seconds
+            response.put("refreshTokenExpiresIn", 604800); // 7 days in seconds
 
             return ResponseEntity.ok(response);
 
@@ -184,7 +196,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
-    
+
     // Helper method to get client IP
     private String getClientIP(HttpServletRequest request) {
         String xfHeader = request.getHeader("X-Forwarded-For");
@@ -312,7 +324,7 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> healthCheck() {
         return ResponseEntity.ok(Map.of("status", "healthy", "service", "auth-backend"));
     }
-    
+
     // NEW: Forgot password - send PIN
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
@@ -323,7 +335,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
         }
     }
-    
+
     // NEW: Verify PIN and reset password
     @PostMapping("/verify-pin")
     public ResponseEntity<?> verifyPinAndResetPassword(@RequestBody Map<String, String> request) {
@@ -331,11 +343,65 @@ public class AuthController {
             String message = passwordResetService.verifyPinAndResetPassword(
                     request.get("email"),
                     request.get("pin"),
-                    request.get("newPassword")
-            );
+                    request.get("newPassword"));
             return ResponseEntity.ok(Map.of("success", true, "message", message));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    // JWT Token Refresh endpoint
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> request) {
+        try {
+            String refreshToken = request.get("refreshToken");
+
+            if (refreshToken == null || refreshToken.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "message", "Refresh token is required"));
+            }
+
+            // Validate refresh token
+            if (!jwtTokenProvider.validateToken(refreshToken)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                        "success", false,
+                        "message", "Invalid or expired refresh token"));
+            }
+
+            // Check if it's a refresh token (not access token)
+            String tokenType = jwtTokenProvider.getTokenType(refreshToken);
+            if (!"refresh".equals(tokenType)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                        "success", false,
+                        "message", "Invalid token type"));
+            }
+
+            // Extract user info and generate new access token
+            String username = jwtTokenProvider.getUsernameFromToken(refreshToken);
+            Long userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
+
+            // Get user to check role
+            Optional<User> userOpt = authService.getUserByUsername(username);
+            if (!userOpt.isPresent()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                        "success", false,
+                        "message", "User not found"));
+            }
+
+            User user = userOpt.get();
+            String newAccessToken = jwtTokenProvider.generateAccessToken(userId, username, user.getRole());
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "accessToken", newAccessToken,
+                    "accessTokenExpiresIn", 900 // 15 minutes
+            ));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "success", false,
+                    "message", "Token refresh failed: " + e.getMessage()));
         }
     }
 
@@ -384,15 +450,31 @@ public class AuthController {
         private String usernameOrEmail;
         private String password;
         private String captchaToken;
+
         // Getters and Setters
-        public String getUsernameOrEmail() { return usernameOrEmail; }
-        public void setUsernameOrEmail(String usernameOrEmail) { this.usernameOrEmail = usernameOrEmail; }
-       
-        public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
-       
-        public String getCaptchaToken() { return captchaToken; }
-        public void setCaptchaToken(String captchaToken) { this.captchaToken = captchaToken; }
+        public String getUsernameOrEmail() {
+            return usernameOrEmail;
+        }
+
+        public void setUsernameOrEmail(String usernameOrEmail) {
+            this.usernameOrEmail = usernameOrEmail;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+
+        public String getCaptchaToken() {
+            return captchaToken;
+        }
+
+        public void setCaptchaToken(String captchaToken) {
+            this.captchaToken = captchaToken;
+        }
     }
 
     public static class UpdateProfileRequest {
