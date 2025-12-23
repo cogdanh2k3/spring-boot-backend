@@ -15,11 +15,13 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final EncryptionService encryptionService;
 
     @Autowired
-    public AuthService(UserRepository userRepository) {
+    public AuthService(UserRepository userRepository, EncryptionService encryptionService) {
         this.userRepository = userRepository;
         this.passwordEncoder = new BCryptPasswordEncoder();
+        this.encryptionService = encryptionService;
     }
 
     // Register new user
@@ -98,8 +100,22 @@ public class AuthService {
     }
 
     // Update user profile by ID (for mobile app)
-    public User updateUserProfileById(Long userId, String fullName, String gender, String dateOfBirth,
-            String hometown) {
+    public User updateUserProfileById(Long userId, String fullName, String email, String gender, String dateOfBirth,
+            String hometown, String phoneNumber, String cccd, String cccdIssueDate, String cccdIssuePlace) {
+
+        // DEBUG: Log incoming parameters
+        System.out.println("=== UPDATE PROFILE DEBUG ===");
+        System.out.println("User ID: " + userId);
+        System.out.println("Full Name: " + fullName);
+        System.out.println("Email: " + email);
+        System.out.println("Gender: " + gender);
+        System.out.println("Date of Birth: " + dateOfBirth);
+        System.out.println("Hometown: " + hometown);
+        System.out.println("Phone Number (raw): " + phoneNumber);
+        System.out.println("CCCD (raw): " + cccd);
+        System.out.println("CCCD Issue Date (raw): " + cccdIssueDate);
+        System.out.println("CCCD Issue Place (raw): " + cccdIssuePlace);
+
         Optional<User> userOpt = userRepository.findById(userId);
 
         if (userOpt.isEmpty()) {
@@ -108,20 +124,108 @@ public class AuthService {
 
         User user = userOpt.get();
 
+        // Update EDITABLE non-sensitive fields
         if (fullName != null && !fullName.trim().isEmpty()) {
             user.setFullName(fullName.trim());
-        }
-        if (gender != null && !gender.trim().isEmpty()) {
-            user.setGender(gender.trim());
-        }
-        if (dateOfBirth != null && !dateOfBirth.trim().isEmpty()) {
-            user.setDateOfBirth(dateOfBirth.trim());
-        }
-        if (hometown != null && !hometown.trim().isEmpty()) {
-            user.setHometown(hometown.trim());
+            System.out.println("✓ Updated fullName");
         }
 
-        return userRepository.save(user);
+        if (email != null && !email.trim().isEmpty()) {
+            // Check if email already exists for another user
+            Optional<User> existingUser = userRepository.findByEmail(email.trim());
+            if (existingUser.isPresent() && !existingUser.get().getId().equals(userId)) {
+                throw new RuntimeException("Email already exists");
+            }
+            user.setEmail(email.trim());
+            System.out.println("✓ Updated email");
+        }
+
+        if (dateOfBirth != null && !dateOfBirth.trim().isEmpty()) {
+            user.setDateOfBirth(dateOfBirth.trim());
+            System.out.println("✓ Updated dateOfBirth");
+        }
+
+        if (hometown != null && !hometown.trim().isEmpty()) {
+            user.setHometown(hometown.trim());
+            System.out.println("✓ Updated hometown");
+        }
+
+        // Gender - keep existing value (not editable from EditProfileScreen)
+        if (gender != null && !gender.trim().isEmpty()) {
+            user.setGender(gender.trim());
+            System.out.println("✓ Updated gender");
+        }
+
+        // Update EDITABLE sensitive field (encrypted) - phoneNumber
+        System.out.println("=== ENCRYPTING EDITABLE SENSITIVE FIELDS ===");
+        if (phoneNumber != null && !phoneNumber.trim().isEmpty()) {
+            System.out.println("Encrypting phone number: " + phoneNumber.trim());
+            String encryptedPhone = encryptionService.encryptData(phoneNumber.trim());
+            System.out.println("Encrypted phone (first 50 chars): "
+                    + encryptedPhone.substring(0, Math.min(50, encryptedPhone.length())));
+            user.setPhoneNumber(encryptedPhone);
+            System.out.println("✓ Updated phoneNumber (encrypted)");
+        } else {
+            System.out.println("Phone number is NULL or empty - skipping");
+        }
+
+        // READ-ONLY sensitive fields (encrypted) - CCCD data
+        // These fields are accepted in the request but NOT updated if already set
+        System.out.println("=== CHECKING READ-ONLY FIELDS (CCCD) ===");
+
+        if (cccd != null && !cccd.trim().isEmpty()) {
+            // Only update if CCCD is not already set (initial setup)
+            if (user.getCccd() == null || user.getCccd().trim().isEmpty()) {
+                System.out.println("CCCD not set yet - encrypting and saving: " + cccd.trim());
+                String encryptedCccd = encryptionService.encryptData(cccd.trim());
+                System.out.println("Encrypted CCCD (first 50 chars): "
+                        + encryptedCccd.substring(0, Math.min(50, encryptedCccd.length())));
+                user.setCccd(encryptedCccd);
+                System.out.println("✓ Initial CCCD setup completed");
+            } else {
+                System.out.println("⚠ CCCD already set - IGNORING update (read-only protection)");
+            }
+        } else {
+            System.out.println("CCCD is NULL or empty - skipping");
+        }
+
+        if (cccdIssueDate != null && !cccdIssueDate.trim().isEmpty()) {
+            // Only update if CCCD Issue Date is not already set
+            if (user.getCccdIssueDate() == null || user.getCccdIssueDate().trim().isEmpty()) {
+                System.out.println("CCCD Issue Date not set yet - encrypting: " + cccdIssueDate.trim());
+                String encryptedIssueDate = encryptionService.encryptData(cccdIssueDate.trim());
+                user.setCccdIssueDate(encryptedIssueDate);
+                System.out.println("✓ Initial CCCD Issue Date setup completed");
+            } else {
+                System.out.println("⚠ CCCD Issue Date already set - IGNORING update (read-only protection)");
+            }
+        } else {
+            System.out.println("CCCD Issue Date is NULL or empty - skipping");
+        }
+
+        if (cccdIssuePlace != null && !cccdIssuePlace.trim().isEmpty()) {
+            // Only update if CCCD Issue Place is not already set
+            if (user.getCccdIssuePlace() == null || user.getCccdIssuePlace().trim().isEmpty()) {
+                System.out.println("CCCD Issue Place not set yet - encrypting: " + cccdIssuePlace.trim());
+                String encryptedIssuePlace = encryptionService.encryptData(cccdIssuePlace.trim());
+                user.setCccdIssuePlace(encryptedIssuePlace);
+                System.out.println("✓ Initial CCCD Issue Place setup completed");
+            } else {
+                System.out.println("⚠ CCCD Issue Place already set - IGNORING update (read-only protection)");
+            }
+        } else {
+            System.out.println("CCCD Issue Place is NULL or empty - skipping");
+        }
+
+        System.out.println("=== SAVING USER TO DATABASE ===");
+        User savedUser = userRepository.save(user);
+        System.out.println(
+                "User saved successfully. Phone in DB: " + (savedUser.getPhoneNumber() != null ? "ENCRYPTED" : "NULL"));
+        System.out.println(
+                "User saved successfully. CCCD in DB: " + (savedUser.getCccd() != null ? "ENCRYPTED" : "NULL"));
+        System.out.println("=== END UPDATE PROFILE DEBUG ===");
+
+        return savedUser;
     }
 
     // Change password

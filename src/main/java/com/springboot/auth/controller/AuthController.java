@@ -166,13 +166,32 @@ public class AuthController {
     public ResponseEntity<?> updateProfileById(
             @PathVariable Long userId,
             @RequestBody UpdateProfileRequest request) {
+
+        // DEBUG: Log incoming request
+        System.out.println("=== CONTROLLER RECEIVED REQUEST ===");
+        System.out.println("Path: PUT /api/auth/profile/" + userId);
+        System.out.println("Request Full Name: " + request.getFullName());
+        System.out.println("Request Email: " + request.getEmail());
+        System.out.println("Request Date of Birth: " + request.getDateOfBirth());
+        System.out.println("Request Hometown: " + request.getHometown());
+        System.out.println("Request Phone Number: " + request.getPhoneNumber());
+        System.out.println("Request CCCD: " + request.getCccd());
+        System.out.println("Request CCCD Issue Date: " + request.getCccdIssueDate());
+        System.out.println("Request CCCD Issue Place: " + request.getCccdIssuePlace());
+        System.out.println("====================================");
+
         try {
             User updatedUser = authService.updateUserProfileById(
                     userId,
                     request.getFullName(),
+                    request.getEmail(),
                     request.getGender(),
                     request.getDateOfBirth(),
-                    request.getHometown());
+                    request.getHometown(),
+                    request.getPhoneNumber(),
+                    request.getCccd(),
+                    request.getCccdIssueDate(),
+                    request.getCccdIssuePlace());
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -303,11 +322,15 @@ public class AuthController {
 
     public static class UpdateProfileRequest {
         private String fullName;
+        private String email;
         private String phoneNumber;
         private String profileImageUrl;
         private String gender;
         private String dateOfBirth;
         private String hometown;
+        private String cccd;
+        private String cccdIssueDate;
+        private String cccdIssuePlace;
 
         // Getters and Setters
         public String getFullName() {
@@ -316,6 +339,14 @@ public class AuthController {
 
         public void setFullName(String fullName) {
             this.fullName = fullName;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
         }
 
         public String getPhoneNumber() {
@@ -356,6 +387,30 @@ public class AuthController {
 
         public void setHometown(String hometown) {
             this.hometown = hometown;
+        }
+
+        public String getCccd() {
+            return cccd;
+        }
+
+        public void setCccd(String cccd) {
+            this.cccd = cccd;
+        }
+
+        public String getCccdIssueDate() {
+            return cccdIssueDate;
+        }
+
+        public void setCccdIssueDate(String cccdIssueDate) {
+            this.cccdIssueDate = cccdIssueDate;
+        }
+
+        public String getCccdIssuePlace() {
+            return cccdIssuePlace;
+        }
+
+        public void setCccdIssuePlace(String cccdIssuePlace) {
+            this.cccdIssuePlace = cccdIssuePlace;
         }
     }
 
@@ -400,6 +455,9 @@ public class AuthController {
         private String gender;
         private String dateOfBirth;
         private String hometown;
+        private String cccd;
+        private String cccdIssueDate;
+        private String cccdIssuePlace;
         private String role; // NEW
         private String createdAt;
         private String lastLogin;
@@ -414,6 +472,9 @@ public class AuthController {
             this.gender = user.getGender();
             this.dateOfBirth = user.getDateOfBirth();
             this.hometown = user.getHometown();
+            this.cccd = user.getCccd();
+            this.cccdIssueDate = user.getCccdIssueDate();
+            this.cccdIssuePlace = user.getCccdIssuePlace();
             this.role = user.getRole(); // NEW
             this.createdAt = user.getCreatedAt() != null ? user.getCreatedAt().toString() : null;
             this.lastLogin = user.getLastLogin() != null ? user.getLastLogin().toString() : null;
@@ -490,6 +551,30 @@ public class AuthController {
 
         public void setHometown(String hometown) {
             this.hometown = hometown;
+        }
+
+        public String getCccd() {
+            return cccd;
+        }
+
+        public void setCccd(String cccd) {
+            this.cccd = cccd;
+        }
+
+        public String getCccdIssueDate() {
+            return cccdIssueDate;
+        }
+
+        public void setCccdIssueDate(String cccdIssueDate) {
+            this.cccdIssueDate = cccdIssueDate;
+        }
+
+        public String getCccdIssuePlace() {
+            return cccdIssuePlace;
+        }
+
+        public void setCccdIssuePlace(String cccdIssuePlace) {
+            this.cccdIssuePlace = cccdIssuePlace;
         }
 
         public String getRole() {

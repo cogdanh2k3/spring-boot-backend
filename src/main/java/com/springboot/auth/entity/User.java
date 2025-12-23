@@ -23,7 +23,7 @@ public class User {
     @Column(length = 100)
     private String fullName;
 
-    @Column(length = 20)
+    @Column(length = 500) // Encrypted data requires more space
     private String phoneNumber;
 
     @Column(length = 500)
@@ -37,6 +37,15 @@ public class User {
 
     @Column(length = 100)
     private String hometown;
+
+    @Column(length = 500) // Encrypted data
+    private String cccd;
+
+    @Column(length = 500) // Encrypted data
+    private String cccdIssueDate;
+
+    @Column(length = 500) // Encrypted data
+    private String cccdIssuePlace;
 
     @Column(nullable = false)
     private boolean active = true;
@@ -147,6 +156,30 @@ public class User {
 
     public void setHometown(String hometown) {
         this.hometown = hometown;
+    }
+
+    public String getCccd() {
+        return cccd;
+    }
+
+    public void setCccd(String cccd) {
+        this.cccd = cccd;
+    }
+
+    public String getCccdIssueDate() {
+        return cccdIssueDate;
+    }
+
+    public void setCccdIssueDate(String cccdIssueDate) {
+        this.cccdIssueDate = cccdIssueDate;
+    }
+
+    public String getCccdIssuePlace() {
+        return cccdIssuePlace;
+    }
+
+    public void setCccdIssuePlace(String cccdIssuePlace) {
+        this.cccdIssuePlace = cccdIssuePlace;
     }
 
     public boolean isActive() {

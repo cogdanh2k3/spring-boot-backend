@@ -582,3 +582,87 @@ Content-Type: application/json
   "password": "password123",
   "fullName": "Test User"
 }
+
+###############################################
+### PROFILE UPDATE API - NEW FLOW ###
+###############################################
+
+### 1. Login to get user ID
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "usernameOrEmail": "testuser",
+  "password": "password123"
+}
+
+### 2. Initial Profile Setup (First Time - Sets CCCD data)
+PUT http://localhost:8080/api/auth/profile/2
+Content-Type: application/json
+
+{
+  "fullName": "Nguyen Van A",
+  "email": "nguyenvana@example.com",
+  "dateOfBirth": "1995-05-10",
+  "hometown": "Hà Nội",
+  "phoneNumber": "0912345678",
+  "cccd": "034099001234",
+  "cccdIssueDate": "15/08/2020",
+  "cccdIssuePlace": "Công an TP Hà Nội"
+}
+
+### 3. Update Profile - Editable Fields Only (Subsequent Updates)
+PUT http://localhost:8080/api/auth/profile/2
+Content-Type: application/json
+
+{
+  "fullName": "Nguyen Van A Updated",
+  "email": "nguyenvana.new@example.com",
+  "dateOfBirth": "1995-05-15",
+  "hometown": "TP Hồ Chí Minh",
+  "phoneNumber": "0987654321",
+  "cccd": "999999999999",
+  "cccdIssueDate": "01/01/2025",
+  "cccdIssuePlace": "New Place"
+}
+# Expected: fullName, email, dateOfBirth, hometown, phoneNumber UPDATED
+# Expected: CCCD fields IGNORED (read-only protection)
+
+### 4. Change Password (Separate Endpoint)
+POST http://localhost:8080/api/auth/change-password
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "oldPassword": "password123",
+  "newPassword": "newpassword456"
+}
+
+### 5. Test Email Uniqueness Validation
+# First create another user
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser2",
+  "email": "second@example.com",
+  "password": "password123",
+  "fullName": "Test User 2"
+}
+
+###
+# Then try to update user 1's email to user 2's email
+PUT http://localhost:8080/api/auth/profile/2
+Content-Type: application/json
+
+{
+  "fullName": "Nguyen Van A",
+  "email": "second@example.com",
+  "dateOfBirth": "1995-05-10",
+  "hometown": "Hà Nội",
+  "phoneNumber": "0912345678"
+}
+# Expected: Error "Email already exists"
+
+### 6. Get User Profile (Verify Updates)
+GET http://localhost:8080/api/auth/user/testuser
