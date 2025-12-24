@@ -183,8 +183,8 @@ public class AuthController {
             // JWT tokens
             response.put("accessToken", accessToken);
             response.put("refreshToken", refreshToken);
-            response.put("accessTokenExpiresIn", 900); // 15 minutes in seconds
-            response.put("refreshTokenExpiresIn", 604800); // 7 days in seconds
+            response.put("accessTokenExpiresIn", jwtTokenProvider.getAccessTokenExpirationSeconds());
+            response.put("refreshTokenExpiresIn", jwtTokenProvider.getRefreshTokenExpirationSeconds());
 
             return ResponseEntity.ok(response);
 
@@ -395,8 +395,7 @@ public class AuthController {
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "accessToken", newAccessToken,
-                    "accessTokenExpiresIn", 900 // 15 minutes
-            ));
+                    "accessTokenExpiresIn", jwtTokenProvider.getAccessTokenExpirationSeconds()));
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(

@@ -23,14 +23,34 @@ public class JwtTokenProvider {
     // Secret key cho JWT (trong production nên lưu ở environment variable)
     private static final String JWT_SECRET = "EduQuizzApp_JWT_Secret_Key_2024_Must_Be_At_Least_256_Bits_Long!";
 
-    // Token expiration times
-    private static final long ACCESS_TOKEN_EXPIRATION = 15 * 60 * 1000; // 15 phút
-    private static final long REFRESH_TOKEN_EXPIRATION = 7 * 24 * 60 * 60 * 1000; // 7 ngày
+    // Token expiration times (dễ dàng thay đổi khi chuyển production)
+    private static final long ACCESS_TOKEN_EXPIRATION = 1 * 60 * 1000; // 1 phút (testing)
+    private static final long REFRESH_TOKEN_EXPIRATION = 2 * 60 * 1000; // 2 phút (testing)
+
+    // Production values (uncomment khi deploy):
+    // private static final long ACCESS_TOKEN_EXPIRATION = 15 * 60 * 1000; // 15
+    // phút
+    // private static final long REFRESH_TOKEN_EXPIRATION = 7 * 24 * 60 * 60 * 1000;
+    // // 7 ngày
 
     private final SecretKey secretKey;
 
     public JwtTokenProvider() {
         this.secretKey = Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
+     * Get access token expiration in SECONDS (for API response)
+     */
+    public long getAccessTokenExpirationSeconds() {
+        return ACCESS_TOKEN_EXPIRATION / 1000;
+    }
+
+    /**
+     * Get refresh token expiration in SECONDS (for API response)
+     */
+    public long getRefreshTokenExpirationSeconds() {
+        return REFRESH_TOKEN_EXPIRATION / 1000;
     }
 
     /**

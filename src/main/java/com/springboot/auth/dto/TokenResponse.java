@@ -16,13 +16,6 @@ public class TokenResponse {
     public TokenResponse() {
     }
 
-    public TokenResponse(String accessToken, String refreshToken) {
-        this.accessToken = accessToken;
-        this.refreshToken = refreshToken;
-        this.accessTokenExpiresIn = 15 * 60; // 15 phút
-        this.refreshTokenExpiresIn = 7 * 24 * 60 * 60; // 7 ngày
-    }
-
     public TokenResponse(String accessToken, String refreshToken,
             long accessExpiresIn, long refreshExpiresIn) {
         this.accessToken = accessToken;
