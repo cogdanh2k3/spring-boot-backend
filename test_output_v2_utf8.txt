@@ -1,0 +1,52 @@
+﻿
+========================================================
+ SETUP: Registering Test Users
+========================================================
+[INFO] Registered User A (ID: 7)
+[INFO] Registered User B (ID: 8)
+[INFO] User A logged in.
+
+========================================================
+ TEST 1: SQL Injection Resilience
+========================================================
+[PASS] SQLi Payload blocked/handled gracefully: ' OR '1'='1
+[PASS] SQLi Payload blocked/handled gracefully: ' OR 1=1 --
+[PASS] SQLi Payload blocked/handled gracefully: admin' --
+
+========================================================
+ TEST 2: Rate Limiting (Brute Force Protection)
+========================================================
+[INFO] Attempting 5 failed logins...
+[INFO] Attempt 1 failed as expected (Unauthorized).
+[INFO] Attempt 2 failed as expected (Unauthorized).
+[INFO] Attempt 3 failed as expected (429).
+[INFO] Attempt 4 failed as expected (429).
+[INFO] Attempt 5 failed as expected (429).
+[WARN] Rate limit NOT triggered after 6 attempts (Code: 429). Checking if Captcha required...
+[PASS] Captcha requirement triggered at attempt 6
+
+========================================================
+ TEST 3: IDOR Vulnerability Check
+========================================================
+[PASS] IDOR Attack BLOCKED (403 Forbidden)
+
+========================================================
+ TEST 4: Stored XSS
+========================================================
+[INFO] Injecting XSS payload into Full Name...
+[WARN] XSS Payload was saved RAW: <script>alert('XSS')</script>
+[INFO] Note: Backend stored it. Frontend MUST escape this output.
+
+========================================================
+ TEST 5: Privilege Escalation
+========================================================
+[INFO] User A attempting to become ADMIN via Profile Update...
+[PASS] Privilege Escalation Blocked. Role is still: USER
+
+========================================================
+ TEST 6: Sensitive Data Encryption
+========================================================
+[INFO] Updating User A with sensitive data...
+[PASS] Data is ENCRYPTED (IV:Ciphertext format detected)
+
+Comprehensive Security Test Complete.

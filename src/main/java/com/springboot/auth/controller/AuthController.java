@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
 
 import com.springboot.auth.controller.AuthController.ChangePasswordRequest;
 import com.springboot.auth.controller.AuthController.UpdateProfileRequest;
@@ -252,7 +254,8 @@ public class AuthController {
     @PutMapping("/profile/{userId}")
     public ResponseEntity<?> updateProfileById(
             @PathVariable Long userId,
-            @RequestBody UpdateProfileRequest request) {
+            @RequestBody UpdateProfileRequest request,
+            Authentication authentication) {
 
         // DEBUG: Log incoming request
         System.out.println("=== CONTROLLER RECEIVED REQUEST ===");
@@ -267,7 +270,28 @@ public class AuthController {
         System.out.println("Request CCCD Issue Place: " + request.getCccdIssuePlace());
         System.out.println("====================================");
 
+        System.out.println("====================================");
+
         try {
+            // SECURITY CHECK: Fix IDOR
+            String currentUsername = authentication.getName();
+            Optional<User> currentUserOpt = authService.getUserByUsername(currentUsername);
+
+            if (currentUserOpt.isPresent()) {
+                User currentUser = currentUserOpt.get();
+                boolean isAdmin = "ADMIN".equals(currentUser.getRole());
+                boolean isOwner = currentUser.getId().equals(userId);
+
+                if (!isAdmin && !isOwner) {
+                    System.out.println("⛔ SECURITY ALERT: IDOR Attempt blocked! User " + currentUsername
+                            + " tried to update profile " + userId);
+                    Map<String, Object> errorResponse = new HashMap<>();
+                    errorResponse.put("success", false);
+                    errorResponse.put("message", "You are not authorized to update this profile.");
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+                }
+            }
+
             User updatedUser = authService.updateUserProfileById(
                     userId,
                     request.getFullName(),

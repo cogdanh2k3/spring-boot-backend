@@ -1,0 +1,7 @@
+﻿
+========================================================
+ SETUP: Registering Test Users
+========================================================
+FATAL ERROR: The remote server returned an error: (400) Bad Request.
+
+Comprehensive Security Test Complete.
